@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Shiksha Global | Boarding Pass</title>
+    <title>Shiksha Study Abroad | Boarding Pass</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
@@ -13,8 +13,8 @@
     <style>
         :root {
             --shiksha-dark: #1E242B;
-            --shiksha-teal: #00A5B5;
-            --shiksha-teal-light: #E0F7FA;
+            --shiksha-teal: #00A5B5; /* Dynamic Primary Color */
+            --shiksha-teal-light: #E0F7FA; /* Dynamic Light Color */
             --shiksha-grey: #64748b;
             --surface: #ffffff;
             --bg-body: #F0F2F5;
@@ -30,6 +30,7 @@
             background: var(--bg-body);
             display: flex; justify-content: center; align-items: center;
             color: var(--shiksha-dark);
+            transition: background 0.5s ease;
         }
 
         .app-shell {
@@ -38,372 +39,271 @@
             display: flex; flex-direction: column;
             box-shadow: 0 30px 60px -15px rgba(30, 36, 43, 0.15);
             overflow: hidden;
+            transition: border-color 0.5s ease;
         }
         @media(min-width: 450px) { .app-shell { height: 92vh; border-radius: 36px; border: 4px solid #fff; } }
 
-        /* --- UI IMPROVEMENTS: Header --- */
+        .theme-watermark {
+            position: absolute;
+            top: 50%; left: 50%; transform: translate(-50%, -50%);
+            font-size: 200px; opacity: 0.03; pointer-events: none;
+            z-index: 0; transition: all 0.5s ease;
+        }
+
+        /* --- Header --- */
         .header {
-            padding: 20px 24px 12px; flex-shrink: 0; z-index: 20;
+            padding: 16px 20px; flex-shrink: 0; z-index: 20;
             display: flex; justify-content: space-between; align-items: center;
             background: var(--surface);
-            /* Subtle separation from content */
+            transition: padding 0.3s ease;
         }
-        .brand { 
-            font-family: 'Space Grotesk', sans-serif; font-weight: 800; font-size: 22px; 
-            letter-spacing: -0.5px; display: flex; align-items: center; gap: 10px; color: var(--shiksha-dark);
-        }
+        .brand { display: flex; align-items: center; gap: 10px; }
+        .brand img { height: 28px; width: auto; object-fit: contain; }
+        
         .timer-pill { 
-            background: #FFF7ED; color: #C2410C; border: 1px solid #FFEDD5; /* Warmer, more alert-like */
-            padding: 6px 14px; border-radius: 12px; font-size: 13px; font-weight: 800; font-feature-settings: "tnum";
+            background: #FFF7ED; color: #C2410C; border: 1px solid #FFEDD5;
+            padding: 4px 12px; border-radius: 12px; font-size: 13px; font-weight: 800; font-feature-settings: "tnum";
             display: flex; align-items: center; gap: 6px; transition: 0.3s;
             box-shadow: 0 2px 8px -2px rgba(234, 88, 12, 0.15);
         }
         .timer-pill.urgent { background: #FEF2F2; color: #DC2626; border-color: #FECACA; animation: pulseRed 1s infinite; }
 
-        /* --- UI IMPROVEMENTS: Stepper --- */
+        /* --- Stepper --- */
         .flight-stepper { 
             display: flex; align-items: flex-start; justify-content: space-between; 
-            padding: 10px 28px 24px; margin-bottom: 0; position: relative; 
+            padding: 4px 24px 12px; margin-bottom: 0; position: relative; 
             font-family: 'Outfit', sans-serif; overflow: hidden; flex-shrink: 0; 
             background: linear-gradient(180deg, var(--surface) 40%, rgba(255,255,255,0) 100%);
+            z-index: 2;
         }
-        
-        /* Removing the old dashed line absolute pos */
-        .flight-stepper::after { display: none; }
-
-        .flight-step { 
-            display: flex; flex-direction: column; align-items: center; gap: 8px; 
-            z-index: 2; width: 60px; /* Fixed width for alignment */
-        }
-        
+        .flight-step { display: flex; flex-direction: column; align-items: center; gap: 4px; z-index: 2; width: 60px; }
         .step-dot { 
-            width: 28px; height: 28px; border-radius: 50%; 
+            width: 20px; height: 20px; border-radius: 50%; 
             background: white; border: 2px solid #E2E8F0; 
             position: relative; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            display: flex; align-items: center; justify-content: center;
-            color: transparent; /* Hide text inside dot */
+            display: flex; align-items: center; justify-content: center; color: transparent; 
         }
-        
-        /* Active dot styling */
         .flight-step.active .step-dot { 
             background: var(--shiksha-teal); border-color: var(--shiksha-teal); 
-            box-shadow: 0 0 0 4px var(--shiksha-teal-light);
-            transform: scale(1.1);
+            box-shadow: 0 0 0 3px var(--shiksha-teal-light); transform: scale(1.1);
         }
-        /* Inner white dot for active state */
-        .flight-step.active .step-dot::after {
-            content: ""; width: 8px; height: 8px; background: white; border-radius: 50%;
-        }
-
-        /* Done dot styling */
+        .flight-step.active .step-dot::after { content: ""; width: 6px; height: 6px; background: white; border-radius: 50%; }
         .flight-step.done .step-dot { 
             background: var(--shiksha-teal); border-color: var(--shiksha-teal); 
-            color: white; width: 28px; height: 28px;
-            box-shadow: none;
+            color: white; width: 20px; height: 20px; box-shadow: none;
         }
-        .flight-step.done .step-dot::after {
-            content: "check"; font-family: 'Material Icons Round'; font-size: 16px; color: white;
-        }
-        /* Hide original check icon in HTML if present inside dot */
-        .flight-step.done .material-icons-round { display: none; }
-
-        /* Text Styling */
-        .flight-step span {
-            font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;
-            color: #94A3B8; transition: color 0.3s;
-        }
+        .flight-step.done .step-dot::after { content: "check"; font-family: 'Material Icons Round'; font-size: 12px; color: white; }
+        .flight-step span { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: #94A3B8; transition: color 0.3s; }
         .flight-step.active span { color: var(--shiksha-dark); font-weight: 700; }
         .flight-step.done span { color: var(--shiksha-teal); }
+        .flight-path { flex: 1; height: 2px; background: #E2E8F0; margin-top: 10px; border-radius: 2px; position: relative; transition: background 0.4s ease; }
+        .flight-step.done + .flight-path { background: var(--shiksha-teal); }
 
-        /* Connecting Lines */
-        .flight-path { 
-            flex: 1; height: 2px; background: #E2E8F0; 
-            margin-top: 14px; /* Align with center of 28px dot */
-            border-radius: 2px; position: relative;
-            transition: background 0.4s ease;
+        .stage-container { flex: 1; position: relative; overflow: hidden; z-index: 5; display: flex; flex-direction: column; }
+        .slide { 
+            position: absolute; inset: 0; padding: 0 20px 0; 
+            display: flex; flex-direction: column; background: transparent; 
+            transition: all 0.5s cubic-bezier(0.2, 0.8, 0.2, 1); 
+            opacity: 0; transform: translateY(20px) scale(0.98); pointer-events: none; z-index: 1; 
         }
-        /* If the step before the path is done, color the path */
-        .flight-step.done + .flight-path { 
-            background: var(--shiksha-teal); 
-        }
-
-        /* Adjusting the checkmark icon in the final step container if it existed */
-        .flight-step.done:last-child .step-dot {
-             /* Final success step specific styling if needed */
-        }
-
-        /* COMPACT LAYOUT FOR SLIDE 3 */
-        .compact-ui {
-            display: flex; flex-direction: column; height: 100%;
-            overflow-y: auto !important; 
-        }
-        .compact-ui h1 { font-size: 22px; margin-bottom: 4px; }
-        .compact-ui p.sub { font-size: 13px; margin-bottom: 12px; }
-        .compact-ui .section-label { margin: 8px 0 6px; font-size: 10px; }
-        .compact-ui .score-segment { margin-bottom: 10px; padding: 3px; }
-        .compact-ui .score-opt { padding: 8px; font-size: 13px; }
-        .compact-ui .identity-card { padding: 14px 16px; gap: 8px; }
-        .compact-ui .id-row { padding: 4px 0; }
-        .compact-ui .minimal-input { padding: 12px; margin-bottom: 8px; font-size: 14px; }
-        .compact-ui .flight-note { padding: 8px 12px; font-size: 11px; margin-bottom: 0; }
-        .compact-ui #target-degree-section { margin-top: 10px; }
-        .compact-ui .chip { padding: 8px 14px; font-size: 12px; }
-        
-        .identity-card {
-            background: rgba(255, 255, 255, 0.65); backdrop-filter: blur(12px);
-            border: 1px solid rgba(226, 232, 240, 0.7); border-radius: 16px;
-            padding: 20px 18px; box-shadow: 0 4px 18px rgba(0, 0, 0, 0.04);
-            display: flex; flex-direction: column; gap: 10px; transition: all 0.25s ease;
-        }
-        .id-row { display: flex; align-items: center; gap: 12px; padding: 6px 0; position: relative; }
-        .id-icon { color: #64748B; font-size: 20px; opacity: 0.8; }
-        .id-cc { font-weight: 600; color: #0F172A; font-size: 15px; letter-spacing: 0.2px; min-width: 32px; }
-        .id-input { border: none; outline: none; background: transparent; flex: 1; font-size: 15px; font-weight: 600; color: #0F172A; padding: 2px 0; }
-        .id-error { font-size: 11px; font-weight: 500; color: #DC2626; margin-left: 34px; letter-spacing: 0.1px; opacity: 0.9; }
-        
-        /* MIC BUTTON */
-        .mic-btn {
-            background: #F1F5F9; border: none; color: #64748B;
-            width: 32px; height: 32px; border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            cursor: pointer; transition: 0.2s;
-        }
-        .mic-btn.listening { background: #FEF2F2; color: #EF4444; animation: pulseRed 1s infinite; }
-
-        .stage-container { flex: 1; position: relative; overflow: hidden; }
-        .slide { position: absolute; inset: 0; padding: 0 24px 24px; display: flex; flex-direction: column; background: var(--surface); transition: all 0.5s cubic-bezier(0.2, 0.8, 0.2, 1); opacity: 0; transform: translateY(20px) scale(0.98); pointer-events: none; z-index: 1; }
         .slide.active { opacity: 1; transform: translateY(0) scale(1); pointer-events: all; z-index: 10; }
         .slide.prev { opacity: 0; transform: translateY(-20px) scale(0.98); pointer-events: none; z-index: 5; }
         
-        .scroll-zone { flex: 1; overflow-y: auto; scrollbar-width: none; padding-bottom: 10px; scroll-behavior: smooth; }
-        h1 { font-family:'Space Grotesk'; font-size:26px; margin:0 0 8px; letter-spacing: 0.1px; }
-        p.sub { font-size: 15px; color: var(--shiksha-grey); margin: 0 0 24px 0; line-height: 1.4; }
-        .section-label { font-size: 11px; font-weight: 800; text-transform: uppercase; margin: 16px 0 8px; letter-spacing: 1px; color: var(--shiksha-grey); }
+        .scroll-zone { 
+            flex: 1; overflow-y: auto; scrollbar-width: none; 
+            padding-bottom: 20px; scroll-behavior: smooth;
+            display: flex; flex-direction: column;
+        }
+        
+        #slide-1 .scroll-zone { justify-content: flex-start; gap: 8px; padding-bottom: 4px; }
 
-        .exam-toggle { display: flex; position: relative; background: #F1F5F9; padding: 6px; border-radius: 20px; margin-bottom: 24px; border: 1px solid #E2E8F0; }
-        .glider { position: absolute; top: 6px; bottom: 6px; left: 6px; width: calc(50% - 6px); background: white; border-radius: 14px; z-index: 1; box-shadow: 0 4px 12px rgba(0,0,0,0.08); transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1); }
+        h1 { font-family:'Space Grotesk'; font-size:22px; margin:0 0 4px; letter-spacing: 0.1px; flex-shrink: 0; line-height: 1.2; }
+        p.sub { font-size: 13px; color: var(--shiksha-grey); margin: 0 0 8px 0; line-height: 1.3; flex-shrink: 0; }
+        .section-label { 
+            font-size: 10px; font-weight: 800; text-transform: uppercase; margin: 6px 0 6px; 
+            letter-spacing: 1px; color: var(--shiksha-grey); flex-shrink: 0; 
+            display: flex; align-items: center; gap: 6px;
+        }
+        .section-label .material-icons-round { font-size: 12px; color: var(--shiksha-teal); }
+
+        .exam-toggle { 
+            display: flex; position: relative; background: #F1F5F9; padding: 4px; 
+            border-radius: 16px; margin-bottom: 6px; border: 1px solid #E2E8F0; 
+            min-height: 48px; flex-shrink: 0;
+        }
+        .glider { position: absolute; top: 4px; bottom: 4px; left: 4px; width: calc(50% - 4px); background: white; border-radius: 14px; z-index: 1; box-shadow: 0 4px 12px rgba(0,0,0,0.08); transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1); }
         .exam-toggle[data-selected="right"] .glider { transform: translateX(100%); }
-        .exam-opt { flex: 1; padding: 12px; text-align: center; font-weight: 700; font-size: 15px; color: #94A3B8; border-radius: 16px; position: relative; z-index: 2; cursor: pointer; }
+        .exam-opt { flex: 1; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; color: #94A3B8; border-radius: 16px; position: relative; z-index: 2; cursor: pointer; }
         .exam-opt.selected { color: var(--shiksha-teal); }
 
-        .score-segment { display: flex; background: #F1F5F9; border-radius: 16px; padding: 4px; margin-bottom: 16px; border: 1px solid #E2E8F0; }
-        .score-opt { flex: 1; text-align: center; padding: 12px; font-size: 14px; font-weight: 700; color: var(--shiksha-grey); border-radius: 12px; cursor: pointer; transition: 0.2s; }
-        .score-opt.active { background: var(--shiksha-teal); color: white; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        .chip-cloud { 
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(80px, 1fr)); 
+            gap: 8px; margin-bottom: 4px; flex-shrink: 0;
+        }
+        .chip { 
+            padding: 8px 4px; border-radius: 10px; border: 1px solid #E2E8F0; 
+            font-size: 12px; font-weight: 600; cursor: pointer; background: white; color: var(--shiksha-grey); 
+            transition: 0.2s; display: flex; align-items: center; justify-content: center; text-align: center;
+        }
+        .chip.selected { background: var(--shiksha-dark); color: white; border-color: var(--shiksha-dark); box-shadow: 0 4px 12px -2px rgba(30, 36, 43, 0.3); }
 
-        .chip-cloud { display: flex; flex-wrap: wrap; gap: 8px; border-radius: 20px; transition: 0.3s; }
-        .chip { padding: 10px 18px; border-radius: 100px; border: 1px solid #E2E8F0; font-size: 13px; font-weight: 600; cursor: pointer; background: white; color: var(--shiksha-grey); transition: 0.2s; }
-        .chip.selected { background: var(--shiksha-dark); color: white; border-color: var(--shiksha-dark); box-shadow: 0 8px 20px -5px rgba(30, 36, 43, 0.3); }
+        .horizontal-chips {
+            display: flex; gap: 12px; overflow-x: auto; padding: 4px 16px 12px 4px;
+            scrollbar-width: none; -webkit-overflow-scrolling: touch; margin-bottom: 4px; width: 100%;
+            mask-image: linear-gradient(to right, black 85%, transparent 100%);
+            -webkit-mask-image: linear-gradient(to right, black 85%, transparent 100%);
+        }
+        .horizontal-chips::-webkit-scrollbar { display: none; }
+        .horizontal-chips .chip { 
+            white-space: nowrap; flex-shrink: 0; padding: 10px 18px; border-radius: 100px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.03); border: 1px solid #E2E8F0;
+        }
+        .horizontal-chips .chip.selected {
+            background: var(--shiksha-teal); color: white; border-color: var(--shiksha-teal);
+            box-shadow: 0 4px 12px rgba(0, 165, 181, 0.25); transform: translateY(-1px);
+        }
 
+        /* Footer Action Bar */
+        .action-footer {
+            flex-shrink: 0; padding: 16px 0 24px; 
+            background: rgba(255,255,255,0.95); backdrop-filter: blur(12px);
+            border-top: 1px solid rgba(0,0,0,0.05); z-index: 20;
+            display: flex; flex-direction: column; align-items: center; gap: 16px;
+            /* Ensure it sits on top if needed, but layout handles it */
+        }
+
+        .swipe-container { position: relative; width: 100%; height: 56px; background: #F8FAFC; border-radius: 100px; border: 1px solid #E2E8F0; overflow: hidden; touch-action: none; user-select: none; flex-shrink: 0; }
+        .swipe-fill { position: absolute; left: 0; top: 0; bottom: 0; width: 0%; background: var(--shiksha-teal); transition: width 0s; }
+        .swipe-text { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800; color: #94A3B8; text-transform: uppercase; letter-spacing: 1.5px; z-index: 2; pointer-events: none; transition: opacity 0.3s; }
+        .swipe-text.white { color: white; opacity: 0; z-index: 4; }
+        .swipe-handle { position: absolute; left: 4px; top: 4px; bottom: 4px; width: 48px; background: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--shiksha-teal); z-index: 3; box-shadow: 0 4px 12px rgba(0,0,0,0.1); cursor: grab; }
+
+        .resume-link { font-size: 12px; font-weight: 700; color: #64748B; display: flex; align-items: center; gap: 6px; cursor: pointer; transition: all 0.2s; padding: 8px 16px; background: #F1F5F9; border-radius: 20px; }
+        .resume-link:hover { color: var(--shiksha-dark); background: #E2E8F0; }
+        .resume-link.shake { animation: shake 0.4s ease-in-out; }
+
+        .slot-row { display: flex; align-items: center; padding: 18px 20px; margin-bottom: 10px; background: white; border: 2px solid #F1F5F9; border-radius: 20px; transition: all 0.2s; cursor: pointer; }
+        .slot-row.active { border-color: var(--shiksha-teal); background: var(--shiksha-teal-light); }
+        .slot-check { color: #CBD5E1; font-size: 22px; }
+        .slot-row.active .slot-check { color: var(--shiksha-teal); }
         .tag-urgent { background: #FEF2F2; color: #DC2626; border: 1px solid #FECACA; font-size: 9px; padding: 2px 6px; border-radius: 4px; font-weight: 800; text-transform: uppercase; margin-left: 8px; display: inline-block; animation: pulseRed 2s infinite; }
         .tag-popular { background: #F0FDF4; color: #166534; border: 1px solid #BBF7D0; font-size: 9px; padding: 2px 6px; border-radius: 4px; font-weight: 800; text-transform: uppercase; margin-left: 8px; display: inline-block; }
 
-        .swipe-container { position: relative; width: 100%; height: 64px; background: #F8FAFC; border-radius: 100px; border: 1px solid #E2E8F0; overflow: hidden; touch-action: none; user-select: none; }
-        .swipe-fill { position: absolute; left: 0; top: 0; bottom: 0; width: 0%; background: var(--shiksha-teal); transition: width 0s; }
-        .swipe-text { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 800; color: #94A3B8; text-transform: uppercase; letter-spacing: 1.5px; z-index: 2; pointer-events: none; }
-        .swipe-handle { position: absolute; left: 4px; top: 4px; bottom: 4px; width: 56px; background: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--shiksha-teal); z-index: 3; box-shadow: 0 4px 12px rgba(0,0,0,0.1); cursor: grab; }
-
-        .slot-row { display: flex; align-items: center; padding: 18px 20px; margin-bottom: 12px; background: white; border: 2px solid #F1F5F9; border-radius: 24px; transition: all 0.2s; cursor: pointer; }
-        .slot-row.active { border-color: var(--shiksha-teal); background: var(--shiksha-teal-light); }
-        .slot-check { color: #CBD5E1; font-size: 24px; }
-        .slot-row.active .slot-check { color: var(--shiksha-teal); }
-
-        .error-msg-container { min-height: 20px; margin-top: 10px; text-align: center; }
-        .error-text { color: var(--error-red); font-size: 12px; font-weight: 700; display: none; animation: fadeIn 0.3s ease; }
-
-        /* --- FIXED SLIDE 4: SCROLLABLE --- */
-        #slide-4 { 
-            justify-content: flex-start; /* Start from top to allow scroll */
-            padding-bottom: 20px; 
-            overflow-y: auto !important; 
-        }
+        .compact-ui { display: flex; flex-direction: column; overflow: hidden !important; padding-bottom: 0 !important; }
+        .compact-ui .form-area { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 14px; width: 100%; padding: 4px 2px 100px; scrollbar-width: none; }
+        .form-card-ui { background: white; border-radius: 16px; padding: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); display: flex; flex-direction: column; gap: 10px; border: 1px solid #F1F5F9; }
+        .id-row-box { display: flex; align-items: center; gap: 12px; padding: 12px 14px; background: #fff; border: 1px solid #E2E8F0; border-radius: 12px; transition: all 0.2s ease; position: relative; box-shadow: 0 1px 2px rgba(0,0,0,0.02); }
+        .id-row-box:focus-within { border-color: var(--shiksha-teal); box-shadow: 0 4px 12px rgba(0, 165, 181, 0.1); transform: translateY(-1px); }
+        .id-icon { color: #94A3B8; font-size: 18px; }
+        .id-cc { font-weight: 700; color: #334155; font-size: 14px; }
+        .id-input { border: none; outline: none; background: transparent; flex: 1; font-size: 14px; font-weight: 600; color: #0F172A; padding: 0; width: 100%; }
+        .id-input::placeholder { color: #94A3B8; font-weight: 500; }
+        .id-error { font-size: 10px; font-weight: 600; color: #EF4444; margin-left: 4px; margin-top: -6px; animation: fadeIn 0.3s ease; }
         
-        /* --- PREMIUM TICKET STYLING --- */
-        .ticket-scene { 
-            width: 100%; 
-            height: 460px; /* INCREASED HEIGHT */
-            perspective: 1200px; 
-            cursor: pointer; 
-            position: relative; 
-            z-index: 5; 
-            animation: floatTicket 6s ease-in-out infinite;
-            margin-top: 30px;
-            margin-bottom: 25px;
-        }
-        @keyframes floatTicket { 
-            0%, 100% { transform: translateY(0); } 
-            50% { transform: translateY(-6px); } 
-        }
+        .score-segment { display: flex; background: #fff; border-radius: 12px; padding: 3px; border: 1px solid #E2E8F0; flex-shrink: 0; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
+        .score-opt { flex: 1; text-align: center; padding: 10px; font-size: 12px; font-weight: 700; color: var(--shiksha-grey); border-radius: 10px; cursor: pointer; transition: 0.2s; }
+        .score-opt.active { background: var(--shiksha-teal); color: white; box-shadow: 0 2px 6px rgba(0,0,0,0.05); }
+
+        .offer-card { background: linear-gradient(135deg, #FFF7ED 0%, #FFEDD5 100%); border: 1px dashed #F97316; padding: 14px; border-radius: 14px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; box-shadow: 0 4px 10px rgba(249, 115, 22, 0.08); transition: transform 0.2s; }
+        .offer-card:active { transform: scale(0.98); }
+        .offer-card.selected { background: #FFF7ED; border: 2px solid #F97316; }
+        .offer-title { font-size: 14px; font-weight: 800; color: #9A3412; display: flex; align-items: center; gap: 6px; }
+        .offer-sub { font-size: 11px; color: #C2410C; font-weight: 600; margin-top: 2px; }
         
-        .ticket-object { width: 100%; height: 100%; position: relative; transition: transform 0.8s; transform-style: preserve-3d; }
+        .addon-row { display: flex; gap: 8px; flex-wrap: wrap; }
+        .addon-pill { flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; padding: 10px; background: white; border: 1px solid #E2E8F0; border-radius: 100px; font-size: 11px; font-weight: 600; color: var(--shiksha-grey); cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+        .addon-pill.selected { background: var(--shiksha-teal-light); border-color: var(--shiksha-teal); color: var(--shiksha-teal); font-weight: 700; }
+
+        .error-msg-container { min-height: 16px; margin-top: 4px; text-align: center; }
+        .error-text { color: var(--error-red); font-size: 10px; font-weight: 700; display: none; animation: fadeIn 0.3s ease; }
+
+        #slide-4 { justify-content: flex-start; padding-bottom: 20px; overflow-y: auto !important; display: flex; flex-direction: column; align-items: center; }
+        .ticket-scene { width: 100%; height: 420px; perspective: 1200px; cursor: pointer; position: relative; z-index: 5; animation: floatTicket 6s ease-in-out infinite; margin-top: 10px; margin-bottom: 16px; flex-shrink: 0; }
+        @keyframes floatTicket { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+        .ticket-object { width: 100%; height: 100%; position: relative; transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275); transform-style: preserve-3d; }
         .ticket-object.is-flipped { transform: rotateY(180deg); }
+        .ticket-face { position: absolute; width: 100%; height: 100%; -webkit-backface-visibility: hidden; backface-visibility: hidden; border-radius: 20px; overflow: hidden; background: white; border: 1px solid #E2E8F0; box-shadow: 0 20px 40px -5px rgba(0,0,0,0.15); transform: rotateY(0deg) translateZ(1px); display: flex; flex-direction: column; }
         
-        /* FIX: Ensure faces have solid backgrounds so they don't show through */
-        .ticket-face { 
-            position: absolute; width: 100%; height: 100%; 
-            -webkit-backface-visibility: hidden; backface-visibility: hidden; 
-            border-radius: 24px; overflow: hidden; background: white; border: 1px solid #E2E8F0; 
-            box-shadow: 0 10px 30px -10px rgba(0,0,0,0.15);
-            /* Important: Slightly nudge faces apart to prevent flickering */
-            transform: rotateY(0deg) translateZ(1px); 
-        }
+        .tf-header { background: linear-gradient(135deg, #0F172A 0%, #334155 100%); height: 70px; padding: 0 24px; display: flex; align-items: center; justify-content: space-between; border-bottom: 2px dashed rgba(255,255,255,0.15); }
+        .brand-sm { font-family: 'Space Grotesk'; font-weight: 700; color: white; letter-spacing: 1.5px; font-size: 14px; display:flex; align-items:center; gap:8px; }
+        .class-type { font-size: 9px; font-weight: 800; color: #FCD34D; background: rgba(252, 211, 77, 0.1); padding: 4px 10px; border-radius: 6px; letter-spacing: 0.5px; border:1px solid rgba(252, 211, 77, 0.3); }
         
-        /* Premium Header */
-        .tf-header { 
-            background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%); 
-            height: 85px; padding: 0 28px; display: flex; align-items: center; justify-content: space-between; 
-            border-bottom: 2px dashed rgba(255,255,255,0.2);
-            position: relative;
-        }
-        .brand-sm { font-family: 'Space Grotesk'; font-weight: 700; color: white; letter-spacing: 1.5px; font-size: 15px; display:flex; align-items:center; gap:8px; }
-        .class-type { font-size: 10px; font-weight: 800; color: #FCD34D; background: rgba(252, 211, 77, 0.15); padding: 5px 12px; border-radius: 8px; letter-spacing: 0.5px; border:1px solid rgba(252, 211, 77, 0.4); }
-        
-        /* Premium Body */
-        .tf-body { 
-            padding: 30px 24px; /* Increased padding inside ticket */
-            display: flex; flex-direction: column; 
-            justify-content: space-between; 
-            height: calc(100% - 85px); 
-            background: radial-gradient(circle at top left, #fff, #F8FAFC);
-        }
+        .tf-body { padding: 24px 24px; flex: 1; display: flex; flex-direction: column; justify-content: space-between; background: radial-gradient(circle at top right, #fff, #F1F5F9); }
         .tf-row { display: flex; justify-content: space-between; align-items: flex-start; }
         .tf-group { display: flex; flex-direction: column; gap: 6px; }
         .tf-group.right { align-items: flex-end; text-align: right; }
-        
-        .tf-label { font-size: 10px; color: #64748B; font-weight: 700; letter-spacing: 1.2px; text-transform: uppercase; }
-        .tf-val { font-size: 16px; font-weight: 700; color: #334155; font-family: 'Outfit'; }
-        .tf-val-lg { font-size: 20px; font-weight: 800; color: #0F172A; font-family: 'Space Grotesk'; }
-        .tf-sub { font-size: 12px; font-weight: 600; color: var(--shiksha-teal); display: flex; align-items: center; gap: 4px;}
-        .tf-mono { font-family: 'JetBrains Mono', monospace; font-size: 17px; font-weight: 700; color: var(--shiksha-teal); letter-spacing: -0.5px; background:#F0FDFA; padding:4px 8px; border-radius:6px; }
-        
-        /* QR on Front */
-        .tf-qr-container { display: flex; justify-content: space-between; align-items: flex-end; margin-top: 16px; padding-top: 16px; border-top: 1px dashed #E2E8F0; }
-        .tf-qr-box { width: 80px; height: 80px; background: white; padding: 4px; border-radius: 8px; border: 1px solid #E2E8F0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
+        .tf-label { font-size: 9px; color: #64748B; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 4px; }
+        .tf-val-lg { font-size: 18px; font-weight: 800; color: #0F172A; font-family: 'Space Grotesk'; }
+        .tf-val { font-size: 15px; font-weight: 700; color: #334155; }
+        .tear-off-line { width: 100%; height: 1px; border-bottom: 2px dashed #E2E8F0; margin: 12px 0; position: relative; }
+        .tear-off-line::before, .tear-off-line::after { content: ""; position: absolute; top: -10px; width: 20px; height: 20px; background: var(--bg-body); border-radius: 50%; }
+        .tear-off-line::before { left: -34px; box-shadow: inset -2px 0 3px rgba(0,0,0,0.05); }
+        .tear-off-line::after { right: -34px; box-shadow: inset 2px 0 3px rgba(0,0,0,0.05); }
+        .tf-qr-container { display: flex; justify-content: space-between; align-items: center; margin-top: auto; }
+        .tf-qr-box { width: 70px; height: 70px; background: white; padding: 4px; border-radius: 8px; border: 1px solid #E2E8F0; }
         .tf-qr-box img { width: 100%; height: 100%; display: block; }
-        
-        .notch { position: absolute; width: 24px; height: 24px; background: var(--bg-body); border-radius: 50%; top: 73px; z-index: 10; box-shadow: inset 0 2px 4px rgba(0,0,0,0.05); }
-        .notch.left { left: -12px; }
-        .notch.right { right: -12px; }
+        .verified-stamp { border: 2px solid var(--shiksha-teal); color: var(--shiksha-teal); font-size: 10px; font-weight: 800; text-transform: uppercase; padding: 4px 8px; border-radius: 4px; transform: rotate(-8deg); opacity: 0.8; letter-spacing: 1px; }
 
-        /* Back Face - Manifest */
-        /* FIX: Added solid background color to back face */
-        .ticket-face.back { 
-            transform: rotateY(180deg) translateZ(1px); 
-            display: flex; flex-direction: column; 
-            background: #fff; /* Ensure opacity */
-        }
-        .tb-header { width: 100%; padding: 18px; background: #F8FAFC; border-bottom: 1px dashed #CBD5E1; text-align: center; font-size: 11px; font-weight: 800; color: #64748B; letter-spacing: 2px; font-family: 'Space Grotesk'; }
+        .ticket-face.back { transform: rotateY(180deg) translateZ(1px); }
+        .tb-header { background: #F1F5F9; padding: 12px 24px; border-bottom: 1px solid #E2E8F0; display:flex; justify-content:space-between; align-items:center;}
+        .tb-content { padding: 20px 24px; display: flex; flex-direction: column; height: 100%; justify-content: space-between; }
+        .tb-row-compact { display: flex; justify-content: space-between; margin-bottom: 12px; }
         
-        .tb-content { padding: 24px 28px; display: flex; flex-direction: column; gap: 20px; height: 100%; }
-        .tb-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; width: 100%; }
-        .tb-item { display: flex; flex-direction: column; gap: 6px; }
-        .tb-lbl { font-size: 10px; color: #94A3B8; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; font-family:'Space Grotesk'; }
-        .tb-dat { font-family: 'Outfit', sans-serif; font-size: 15px; font-weight: 700; color: #1E293B; }
-        
-        .tb-footer { display: flex; align-items: center; gap: 20px; margin-top: auto; padding-top: 20px; border-top: 1px dashed #E2E8F0; }
-        .tb-qr { padding: 5px; background: white; border: 1px solid #E2E8F0; border-radius: 12px; width: 80px; height: 80px; flex-shrink: 0; display:flex; align-items:center; justify-content:center; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
-        .tb-qr img { width: 100%; height: 100%; display: block; }
-        
-        #tkt-id-back { font-family: 'JetBrains Mono', monospace; color: var(--shiksha-teal); font-size: 18px; letter-spacing: -0.5px; font-weight: 700; }
+        .btn-wa-large { width: 100%; padding: 14px; border-radius: 14px; border: none; background: linear-gradient(90deg, var(--shiksha-dark) 0%, #334155 100%); color: white; font-family: 'Outfit', sans-serif; font-size: 14px; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 12px rgba(30, 41, 59, 0.2); cursor: pointer; text-decoration: none; transition: 0.2s; }
+        .btn-secondary-large { width: 100%; padding: 14px; border-radius: 14px; border: 2px solid var(--shiksha-teal); background: white; color: var(--shiksha-teal); font-family: 'Outfit', sans-serif; font-size: 14px; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; transition: 0.2s; }
+        .seat-locked-pill { position: relative; top: 0; margin-bottom: -10px; background: #ECFDF5; color: #059669; border: 1px solid #A7F3D0; padding: 4px 14px; border-radius: 100px; font-size: 10px; font-weight: 800; letter-spacing: 1px; display: inline-flex; align-items: center; gap: 4px; z-index: 20; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
 
-        .success-card-container { 
-            min-height: 300px; 
-            background: #ffffff; 
-            border-radius: 24px; 
-            padding: 24px 20px 20px; 
-            position: relative; 
-            display: flex; flex-direction: column; gap: 16px; 
-            box-shadow: 0 20px 40px -10px rgba(0, 62, 84, 0.08); 
-            border: 2px solid var(--shiksha-teal); 
-            margin-top: 15px; 
-            flex-shrink: 0; 
-        }
-        .seat-locked-pill { position: absolute; top: 0; left: 50%; transform: translate(-50%, -50%); background: #ECFDF5; color: #059669; border: 1px solid #A7F3D0; padding: 5px 16px; border-radius: 100px; font-size: 11px; font-weight: 800; letter-spacing: 1px; display: flex; align-items: center; gap: 6px; z-index: 20; white-space: nowrap; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-        
-        .btn-wa-large { width: 100%; padding: 14px; border-radius: 16px; border: none; background: linear-gradient(90deg, #22C55E 0%, #10B981 100%); color: white; font-family: 'Outfit', sans-serif; font-size: 15px; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 6px 15px -4px rgba(16, 185, 129, 0.4); cursor: pointer; text-decoration: none; margin-bottom: 10px; transition: 0.3s; }
-        .btn-wa-large:active { transform: scale(0.98); }
-        .btn-cal-large { width: 100%; padding: 14px; border-radius: 16px; border: 2px solid #22C55E; background: white; color: #15803d; font-family: 'Outfit', sans-serif; font-size: 15px; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; }
-        
-        .tap-hint { position:absolute; right:15px; top:5px; font-size:10px; color:rgba(255,255,255,0.85); background:rgba(255,255,255,0.22); padding:2px 8px; border-radius:20px; animation: hintFloat 2.4s ease-in-out infinite; }
-        @keyframes hintFloat { 0%,100% { transform: translateY(0); opacity: 0.85; } 50% { transform: translateY(-3px); opacity: 1; } }
-        @keyframes pulseRed { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
-        @keyframes shimmer { to { background-position: 200% center; } }
-        @keyframes fadeIn { from { opacity:0; transform:translateY(-5px); } to { opacity:1; transform:translateY(0); } }
-        @keyframes pulseError { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.02); } }
-        .shake { animation: shake 0.4s ease-in-out; }
-        @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-5px)} 75%{transform:translateX(5px)} }
+        @media (max-height: 700px) { .header { padding: 10px 16px; } .flight-stepper { padding-bottom: 8px; } .ticket-scene { height: 380px; margin-top: 10px; margin-bottom: 10px; } .tf-header { height: 60px; } .tf-body { padding: 16px 20px; } .tf-val-lg { font-size: 16px; } .tear-off-line { margin: 8px 0; } }
+        @media (max-height: 600px) { .ticket-scene { height: 350px; } .btn-wa-large, .btn-secondary-large { padding: 10px; font-size: 13px; } }
 
-        .calendar-toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(20px); background: #0F172A; color: #fff; padding: 14px 20px; border-radius: 16px; font-size: 13px; font-weight: 600; box-shadow: 0 10px 30px rgba(0,0,0,0.25); opacity: 0; pointer-events: none; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); text-align: center; z-index: 100; width: 90%; max-width: 380px; }
-        .calendar-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-        .toast-sub { font-size: 11px; font-weight: 400; opacity: 0.8; margin-top: 2px; display:block; }
+        /* OFFER POPUP STYLES */
+        .discount-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 2000; display: none; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
+        .discount-card { background: #fff; width: 85%; max-width: 320px; border-radius: 20px; padding: 24px; text-align: center; position: relative; box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2); animation: popUpScale 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .discount-badge { background: #EF4444; color: white; font-size: 10px; font-weight: 800; padding: 4px 10px; border-radius: 20px; display: inline-block; margin-bottom: 10px; letter-spacing: 0.5px; }
+        .discount-title { font-size: 22px; font-weight: 800; color: #1E293B; margin: 0 0 4px; }
+        .discount-price { font-size: 28px; font-weight: 800; color: var(--shiksha-teal); margin: 6px 0; font-family: 'Space Grotesk'; }
+        .discount-old { font-size: 14px; color: #94A3B8; text-decoration: line-through; font-weight: 600; margin-left: 6px; }
+        .discount-btn { background: #1E293B; color: white; width: 100%; padding: 12px; border-radius: 12px; font-weight: 700; border: none; font-size: 14px; cursor: pointer; margin-top: 14px; }
+        .discount-close { position: absolute; top: 10px; right: 10px; background: #F1F5F9; border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #64748B; font-weight: 700; font-size: 14px; }
 
-        .swipe-text.white { -webkit-text-fill-color: white; opacity: 0; }
-        
-        /* Mobile Optimization for Ticket */
-        @media (max-width: 380px) {
-            .ticket-scene { height: 460px; } /* ENSURE HEIGHT ON MOBILE */
-            .tf-header, .tf-body { padding: 12px 16px; }
-            .tf-val-lg { font-size: 16px; }
-            .tf-val { font-size: 13px; }
-            .tb-qr { width: 80px; height: 80px; }
-        }
+        .fade-in-section { animation: fadeInUp 0.4s ease-out forwards; opacity: 0; transform: translateY(10px); }
+        @keyframes fadeInUp { to { opacity: 1; transform: translateY(0); } }
+        @keyframes popUpScale { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 
-        /* COUNTDOWN MODAL STYLES */
-        #timer-modal {
-            position: absolute; inset: 0; background: rgba(15, 23, 42, 0.8);
-            backdrop-filter: blur(8px); display: none; flex-direction: column;
-            align-items: center; justify-content: center; z-index: 1000;
-            color: white; text-align: center; padding: 20px;
-        }
-        .timer-box {
-            background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);
-            padding: 24px; border-radius: 20px; width: 100%; max-width: 320px;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
-        }
+        /* Modal Styles */
+        #timer-modal { position: absolute; inset: 0; background: rgba(15, 23, 42, 0.9); backdrop-filter: blur(8px); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 3000; color: white; text-align: center; padding: 20px; }
+        .timer-box { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); padding: 24px; border-radius: 20px; width: 100%; max-width: 320px; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
         .timer-label { font-size: 12px; text-transform: uppercase; letter-spacing: 2px; opacity: 0.8; margin-bottom: 10px; font-weight: 700; }
         .timer-val { font-family: 'JetBrains Mono', monospace; font-size: 32px; font-weight: 700; color: #FCD34D; margin-bottom: 8px; }
         .timer-note { font-size: 13px; line-height: 1.5; opacity: 0.9; margin-bottom: 20px; }
         .btn-close-timer { background: white; color: #0F172A; border: none; padding: 12px 24px; border-radius: 12px; font-weight: 700; cursor: pointer; font-size: 14px; }
-        
-        /* SAVE ICON STYLE */
-        .save-icon {
-            position: absolute; top: 16px; right: 16px; 
-            width: 36px; height: 36px; 
-            background: #FFF; border-radius: 50%; 
-            display: flex; align-items: center; justify-content: center; 
-            color: var(--shiksha-dark); box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-            cursor: pointer; z-index: 20; transition: transform 0.2s;
-        }
-        .save-icon:active { transform: scale(0.9); }
 
-        /* SAVE HINT STYLE */
-        .save-hint {
-            position: absolute; top: 20px; right: 58px; 
-            font-size: 10px; font-weight: 700; color: #0F172A;
-            background: #F1F5F9; padding: 6px 10px; border-radius: 8px;
-            z-index: 19; pointer-events: none;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-            animation: slideInHint 0.5s ease-out 0.5s forwards; opacity: 0;
+        /* FIX: High Z-index and pointer events for Recommendation Modal */
+        #rec-modal { 
+            display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 9999; 
+            align-items: center; justify-content: center; backdrop-filter: blur(4px); 
+            pointer-events: auto; /* Force events */
         }
-        @keyframes slideInHint { from { opacity: 0; transform: translateX(5px); } to { opacity: 1; transform: translateX(0); } }
-        
-        /* ONE-TAP RESUME BUTTON */
-        .resume-pill {
-            position: absolute; bottom: 80px; left: 50%; transform: translateX(-50%);
-            background: #0F172A; color: white; padding: 10px 24px; border-radius: 100px;
-            font-size: 13px; font-weight: 700; display: none; align-items: center; gap: 8px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3); z-index: 50; cursor: pointer;
-            animation: floatUp 0.4s ease-out forwards;
+        #rec-modal > div { 
+            background:white; padding:24px; border-radius:20px; width:85%; max-width:320px; 
+            text-align:center; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); 
+            pointer-events: auto;
         }
-        @keyframes floatUp { from { transform: translate(-50%, 20px); opacity:0; } to { transform: translate(-50%, 0); opacity:1; } }
+
+        .flip-timer { display: flex; gap: 8px; justify-content: center; margin: 12px 0 20px; }
+        .flip-unit { display: flex; flex-direction: column; align-items: center; }
+        .flip-box { background: #1E293B; color: #FCD34D; font-family: 'JetBrains Mono', monospace; font-size: 20px; font-weight: 700; padding: 10px 8px; border-radius: 8px; min-width: 44px; text-align: center; box-shadow: 0 4px 10px -2px rgba(0,0,0,0.2); border: 1px solid #334155; }
+        .flip-label { font-size: 10px; color: #64748B; margin-top: 5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+        .flip-sep { font-size: 20px; font-weight: 700; color: #1E293B; margin-top: 8px; opacity: 0.5; }
     </style>
 </head>
 <body>
 
-<div class="app-shell">
+<div class="app-shell" id="appShell">
+    <div class="theme-watermark" id="themeIcon"></div>
     <div class="header">
         <div class="brand">
-            <span class="material-icons-round" style="color:#F59E0B">stars</span>
-            SHIKSHA.COM
+            <img src="https://raw.githubusercontent.com/grim10/Register.github.io/3f57278b2ab789f9a632dea6faef0d742335b65f/SA-logo_normal%203.jpg" alt="Shiksha Study Abroad" style="height: 32px; width: auto;">
         </div>
         <div class="timer-pill" id="timerPill">
             <span class="material-icons-round" style="font-size:16px">timer</span>
@@ -433,13 +333,15 @@
                     <div class="exam-opt selected" onclick="setExam('IELTS', this)">IELTS</div>
                     <div class="exam-opt" onclick="setExam('TOEFL', this)">TOEFL</div>
                 </div>
-                <p class="section-label">Intake</p>
-                <div class="chip-cloud" style="margin-bottom:16px;">
+                
+                <p class="section-label"><span class="material-icons-round">calendar_today</span> Intake</p>
+                <div class="chip-cloud" style="margin-bottom:12px;">
                     <div class="chip selected" onclick="setChip(this, 'intake', 'Fall 26')">Fall '26</div>
                     <div class="chip" onclick="setChip(this, 'intake', 'Spr 27')">Spr '27</div>
                     <div class="chip" onclick="setChip(this, 'intake', 'Fall 27')">Fall '27</div>
                 </div>   
-                <p class="section-label">Destination</p>
+                
+                <p class="section-label"><span class="material-icons-round">public</span> Destination</p>
                 <div class="chip-cloud" id="country-chips">
                     <div class="chip" onclick="setChip(this, 'country', 'USA')">USA</div>
                     <div class="chip selected" onclick="setChip(this, 'country', 'UK')">UK</div>
@@ -451,17 +353,16 @@
                 </div>
             </div>
             
-            <!-- ONE TAP RESUME BUTTON -->
-            <div id="quick-resume-btn" class="resume-pill" onclick="restoreSession()">
-                <span>View My Ticket</span> <span class="material-icons-round" style="font-size:16px">confirmation_number</span>
-            </div>
-
-            <div class="action-footer" style="padding:24px 0;">
+            <div class="action-footer">
                 <div class="swipe-container" id="swipeTrack">
                     <div class="swipe-fill" id="swipeFill"></div>
                     <div class="swipe-text" id="swipeText">Swipe to Choose a Batch </div>
                     <div class="swipe-text white" id="swipeTextSuccess">Confirmed</div>
                     <div class="swipe-handle" id="swipeBtn"><span class="material-icons-round">arrow_forward</span></div>
+                </div>
+                <!-- Secondary Action Button Moved to Footer -->
+                <div class="resume-link" onclick="restoreSession()">
+                    <span class="material-icons-round" style="font-size:16px">confirmation_number</span> View My Ticket
                 </div>
             </div>
         </div>
@@ -482,33 +383,72 @@
             <h1 id="passenger-header">Passenger Info 🪪</h1>
             <p class="sub">Helps us make your study journey personalised.</p>
             
-            <p class="section-label">Undergrad Score</p>
-            <div class="score-segment">
-                <div class="score-opt active" onclick="setScore(this, '> 50%')">> 50%</div>
-                <div class="score-opt" onclick="setScore(this, '< 50%')">< 50%</div>
+            <div class="form-area">
+                <div class="form-card-ui">
+                    <div class="id-row-box">
+                        <span class="material-icons-round id-icon">phone</span>
+                        <span class="id-cc" id="phone-cc">+91</span>
+                        <div style="width:1px; height:20px; background:#CBD5E1; margin:0 4px;"></div>
+                        <input id="inpPhone" class="id-input" placeholder="WhatsApp Number" maxlength="15" autocomplete="tel">
+                    </div>
+                    <div id="contact-error" class="id-error" style="display:none;">Please check Phone and Email</div>
+
+                    <div class="id-row-box">
+                        <span class="material-icons-round id-icon">mail</span>
+                        <input id="inpEmail" class="id-input" placeholder="Email Address" inputmode="email" autocomplete="email">
+                    </div>
+
+                    <div class="id-row-box">
+                        <span class="material-icons-round id-icon">person</span>
+                        <input id="inpName" class="id-input" placeholder="Full Name" inputmode="text" autocomplete="name" autocapitalize="words">
+                        <button class="mic-btn" onclick="startVoiceInput(this)" style="position:absolute; right:12px;"><span class="material-icons-round" style="font-size:18px">mic</span></button>
+                    </div>
+                </div>
+
+                <div style="display:flex; flex-direction:column; gap:16px;">
+                    <div>
+                        <p class="section-label" style="margin-top:0;"><span class="material-icons-round">school</span> Undergrad Score</p>
+                        <div class="score-segment">
+                            <div class="score-opt active" onclick="setScore(this, '> 50%')">> 50%</div>
+                            <div class="score-opt" onclick="setScore(this, '< 50%')">< 50%</div>
+                        </div>
+                    </div>
+                    
+                    <div id="target-degree-section" class="fade-in-section" style="display:none;">
+                        <p class="section-label" id="lbl-degree" style="margin-top:0;"><span class="material-icons-round">workspace_premium</span> Target Degree</p>
+                        <div id="degree-chips" class="chip-cloud"></div>
+                    </div>
+                    
+                    <div id="target-course-section" class="fade-in-section" style="display:none;">
+                         <p class="section-label" id="lbl-course" style="margin-top:0;"><span class="material-icons-round">auto_stories</span> Target Course</p>
+                         <div id="course-chips" class="horizontal-chips"></div>
+                    </div>
+
+                    <div id="offers-section" class="fade-in-section" style="display:none; flex-direction:column; gap:16px;">
+                        <div id="toefl-offer" class="offer-card" style="display:none;" onclick="toggleOffer(this)">
+                             <div class="offer-content">
+                                 <div class="offer-title"><span class="material-icons-round" style="font-size:16px;">local_offer</span> ₹2000 OFF</div>
+                                 <div class="offer-sub">On TOEFL Exam Booking</div>
+                             </div>
+                             <span class="material-icons-round" style="color:#C2410C; font-size:20px;" id="offer-check">check_box_outline_blank</span>
+                        </div>
+                        <div>
+                             <p class="section-label" style="margin-top:0; margin-bottom:8px;"><span class="material-icons-round">add_circle_outline</span> Student Services</p>
+                             <div class="addon-row">
+                                 <div class="addon-pill" onclick="toggleAddon(this, 'Loan')">
+                                     <span class="material-icons-round">account_balance</span> Loan
+                                 </div>
+                                 <div class="addon-pill" onclick="toggleAddon(this, 'Accommodation')">
+                                     <span class="material-icons-round">apartment</span> Accommodation
+                                 </div>
+                             </div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
-            <p class="section-label" style="margin-top:0;">CONTACT DETAILS</p>
-            <div class="identity-card">
-                <div class="id-row">
-                    <span class="material-icons-round id-icon">phone</span><span class="id-cc" id="phone-cc">+91</span>
-                    <input id="inpPhone" class="id-input" placeholder="WhatsApp Number" maxlength="15" autocomplete="tel">
-                </div>
-                <div id="phone-error" class="id-error" style="display:none;">Please enter valid 10 digit Indian Phone Number</div>
-                <div class="id-row" style="position:relative;">
-                    <span class="material-icons-round id-icon">person</span>
-                    <input id="inpName" class="id-input" placeholder="Full Name" inputmode="text" autocomplete="name" autocapitalize="words">
-                    <button class="mic-btn" onclick="startVoiceInput(this)"><span class="material-icons-round" style="font-size:18px">mic</span></button>
-                </div>
-                <div class="flight-note"><span class="material-icons-round" style="font-size:14px">flight_takeoff</span> Needed for class updates.</div>
-            </div>
-            
-            <div id="target-degree-section" style="display:none; flex:1;">
-                <p class="section-label" id="lbl-course">Target Degree</p>
-                <div id="course-chips" class="chip-cloud"></div>
-            </div>
-
-            <div class="action-footer" style="padding:16px 0;">
+            <div class="action-footer" id="final-cta-container">
+                <!-- IMPORTANT: Removed display:none here, logic controls flow now -->
                 <button class="btn-wa-large" style="background:var(--shiksha-dark); margin-bottom:0;" onclick="finish()">
                     <span style="flex:1; text-align:left;">Get Class Joining Pass </span>
                     <span style="font-size:12px; opacity:0.8; font-weight:500;">(Final Step)</span>
@@ -522,139 +462,119 @@
 
         <!-- Slide 4: Boarding Pass -->
         <div class="slide next" id="slide-4">
-            <div class="success-card-container">
-                <!-- Save Hint -->
-                <div class="save-hint">Save & Scan to Join Class</div>
-                <!-- Save Icon -->
-                <div class="save-icon" onclick="saveTicketSnapshot()">
-                    <span class="material-icons-round" style="font-size:20px; color:#1E293B;">download</span>
-                </div>
-                
-                <div class="seat-locked-pill"><span class="material-icons-round" style="font-size:12px;">lock</span> SEAT LOCKED</div>
-                
-                <div class="ticket-scene" id="ticket-visual">
-                    <div class="ticket-object" onclick="this.classList.toggle('is-flipped')">
-                        <!-- Front Face -->
-                        <div class="ticket-face">
-                            <div class="tf-header">
-                                <div class="brand-sm"><span class="material-icons-round" style="color:#F59E0B; font-size:16px;">stars</span> SHIKSHA</div>
-                                <div class="class-type">PREMIUM CLASS</div>
-                            </div>
-                            <div class="tf-body">
-                                <div class="tf-row">
-                                    <div class="tf-group">
-                                        <div class="tf-label">PASSENGER</div>
-                                        <div class="tf-val-lg" id="tkt-name">STUDENT</div>
-                                    </div>
-                                    <div class="tf-group right">
-                                        <div class="tf-label">COURSE</div>
-                                        <div class="tf-val-lg" id="tkt-exam">IELTS</div>
-                                    </div>
-                                </div>
-                                <div class="tf-divider" style="height:1px; background:#E2E8F0; width:100%; border-bottom:1px dashed #CBD5E1; margin:8px 0;"></div>
-                                <div class="tf-row">
-                                    <div class="tf-group">
-                                        <div class="tf-label">START DATE</div>
-                                        <div class="tf-val" id="tkt-date">Oct 24</div>
-                                        <div class="tf-sub"><span id="tkt-day">Monday</span></div>
-                                    </div>
-                                    <div class="tf-group right">
-                                        <div class="tf-label">CLASS TIME</div>
-                                        <div class="tf-val" id="tkt-time">11:00 - 12:00</div>
-                                    </div>
-                                </div>
-                                
-                                <!-- QR CODE NOW ON FRONT -->
-                                <div class="tf-qr-container">
-                                     <div class="tf-group">
-                                        <div class="tf-label">STUDENT ID</div>
-                                        <div class="tf-mono" id="tkt-id">84932</div>
-                                        <div class="tf-label" style="margin-top:6px;">CLASS DAYS</div>
-                                        <div class="tf-val" id="tkt-days-week">Mon-Fri</div>
-                                     </div>
-                                     <div style="text-align:center;">
-                                         <div class="tf-qr-box" id="qrcode-front"></div>
-                                         <div style="font-size:9px; font-weight:700; color:#94A3B8; margin-top:4px; letter-spacing:0.5px;">SCAN TO JOIN</div>
-                                     </div>
-                                </div>
-                            </div>
-                            <div class="notch left"></div>
-                            <div class="notch right"></div>
-                            <div class="tap-hint">Tap to Flip</div>
+            <div class="seat-locked-pill"><span class="material-icons-round" style="font-size:12px;">lock</span> SEAT LOCKED</div>
+            <div class="ticket-scene" id="ticket-visual">
+                <div class="ticket-object" onclick="this.classList.toggle('is-flipped')">
+                    <div class="ticket-face">
+                        <div class="tf-header">
+                            <div class="brand-sm"><span class="material-icons-round" style="color:#F59E0B; font-size:16px;">stars</span> SHIKSHA</div>
+                            <div class="class-type">PREMIUM CLASS</div>
                         </div>
-                        
-                        <!-- Back Face -->
-                        <div class="ticket-face back">
-                            <div class="tb-header">PASSENGER MANIFEST</div>
-                            <div class="tb-content">
-                                <div class="tb-grid">
-                                    <div class="tb-item">
-                                        <div class="tb-lbl">Destination</div>
-                                        <div class="tb-dat" id="bk-country">USA</div>
-                                    </div>
-                                    <div class="tb-item">
-                                        <div class="tb-lbl">Intake</div>
-                                        <div class="tb-dat" id="bk-intake">Fall '26</div>
-                                    </div>
-                                    <div class="tb-item">
-                                        <div class="tb-lbl">Target</div>
-                                        <div class="tb-dat" id="bk-course">MS</div>
-                                    </div>
-                                    <div class="tb-item">
-                                        <div class="tb-lbl">Trainer</div>
-                                        <div class="tb-dat" id="bk-trainer">Prerna K</div>
-                                    </div>
+                        <div class="tf-body">
+                            <div class="tf-row">
+                                <div class="tf-group">
+                                    <div class="tf-label">PASSENGER</div>
+                                    <div class="tf-val-lg" id="tkt-name">STUDENT</div>
                                 </div>
-                                <div class="tb-footer">
-                                    <div class="tb-item">
-                                        <div class="tb-lbl">End Date</div>
-                                        <div class="tb-dat" id="tkt-end-date">Nov 24</div>
-                                    </div>
-                                    <div class="tb-item">
-                                        <div class="tb-lbl">Student ID</div>
-                                        <div class="tb-dat" id="tkt-id-back">84932</div>
-                                    </div>
+                                <div class="tf-group right">
+                                    <div class="tf-label">COURSE</div>
+                                    <div class="tf-val-lg" id="tkt-exam">IELTS</div>
+                                </div>
+                            </div>
+                            <div class="tear-off-line"></div>
+                            <div class="tf-row">
+                                <div class="tf-group">
+                                    <div class="tf-label">START DATE</div>
+                                    <div class="tf-val" id="tkt-date">Oct 24</div>
+                                    <div class="tf-sub"><span id="tkt-day">Monday</span></div>
+                                </div>
+                                <div class="tf-group right">
+                                    <div class="tf-label">CLASS TIME</div>
+                                    <div class="tf-val" id="tkt-time">11:00 - 12:00</div>
+                                </div>
+                            </div>
+                            <div class="tf-qr-container">
+                                 <div class="tf-group">
+                                    <div class="tf-label">STUDENT ID</div>
+                                    <div class="tf-mono" id="tkt-id">84932</div>
+                                    <div class="tf-label" style="margin-top:6px;">DAYS</div>
+                                    <div class="tf-val" id="tkt-days-week">Mon-Fri</div>
+                                 </div>
+                                 <div style="text-align:center;">
+                                     <div class="tf-qr-box" id="qrcode-front"></div>
+                                     <div style="font-size:8px; font-weight:700; color:#94A3B8; margin-top:2px;">SCAN TO JOIN</div>
+                                 </div>
+                            </div>
+                        </div>
+                        <div class="notch left"></div>
+                        <div class="notch right"></div>
+                        <div class="tap-hint">Tap to Flip</div>
+                    </div>
+                    
+                    <div class="ticket-face back">
+                        <div class="tb-header">
+                            <span>MANIFEST</span>
+                            <span class="tb-id-tag" id="bk-id-tag">ID: 84932</span>
+                        </div>
+                        <div class="tb-content">
+                            <div class="tb-section">
+                                <div class="tb-label-main">DETAILS</div>
+                                <div class="tb-row-compact">
+                                    <div class="tb-group"><div class="tb-lbl">NAME</div><div class="tb-dat" id="bk-name">Name</div></div>
+                                </div>
+                                <div class="tb-row-compact">
+                                    <div class="tb-group"><div class="tb-lbl">PHONE</div><div class="tb-dat" id="bk-phone">+91...</div></div>
+                                    <div class="tb-group"><div class="tb-lbl">EMAIL</div><div class="tb-dat" id="bk-email">...</div></div>
+                                </div>
+                            </div>
+                            <div class="tb-divider-dashed"></div>
+                            <div class="tb-section">
+                                <div class="tb-label-main">GOALS</div>
+                                <div class="tb-grid-3">
+                                    <div class="tb-group"><div class="tb-lbl">COUNTRY</div><div class="tb-dat" id="bk-country">USA</div></div>
+                                    <div class="tb-group"><div class="tb-lbl">INTAKE</div><div class="tb-dat" id="bk-intake">Fall</div></div>
+                                    <div class="tb-group"><div class="tb-lbl">DEGREE</div><div class="tb-dat" id="bk-course">MS</div></div>
+                                </div>
+                            </div>
+                            <div class="tb-divider-dashed"></div>
+                            <div class="tb-footer-new">
+                                <div id="qrcode-back" class="tb-qr-new"></div>
+                                <div class="tb-footer-text">
+                                    Scan for attendance<br>
+                                    <span class="verified-stamp">VERIFIED</span>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-                
-                <!-- Action Buttons -->
-                <div style="margin-top: 10px; display: flex; flex-direction: column; gap: 8px;">
-                    <button id="btn-join-class" class="btn-wa-large" style="background: var(--shiksha-dark); box-shadow:none;" onclick="checkJoinTime()">
-                        Enter Class <span class="material-icons-round">video_camera_front</span>
-                    </button>
-                    
-                    <button onclick="addClassToCalendar()" class="btn-cal-large">
-                        Add to Calendar <span class="material-icons-round">event</span>
-                    </button>
+            </div>
+            
+            <div style="width: 100%; max-width: 340px; display: flex; flex-direction: column; gap: 8px; z-index: 10;">
+                <button id="btn-join-class" class="btn-wa-large" style="background: var(--shiksha-dark); box-shadow:none;" onclick="checkJoinTime()">
+                    Enter Class <span class="material-icons-round">video_camera_front</span>
+                </button>
+                <button onclick="joinWhatsApp()" class="btn-secondary-large">
+                    Join WhatsApp Group <span class="material-icons-round">groups</span>
+                </button>
+                <div class="save-icon" onclick="saveTicketSnapshot()" style="position:static; width:100%; height:auto; background:transparent; box-shadow:none; color:#64748B; font-size:12px; font-weight:600; display:flex; gap:6px; justify-content:center; padding:8px;">
+                    <span class="material-icons-round" style="font-size:16px;">download</span> Download Ticket
                 </div>
             </div>
-            <div id="calendar-toast" class="calendar-toast">Class reminders added to your calendar 📅<span class="toast-sub">We’ll also remind you on WhatsApp</span></div>
         </div>
     </div>
 </div>
 
-<!-- COUNTDOWN MODAL -->
-<div id="timer-modal">
-    <div class="timer-box">
-        <span class="material-icons-round" style="font-size:32px; color:#FCD34D; margin-bottom:10px;">hourglass_empty</span>
-        <div class="timer-label">CLASS STARTS IN</div>
-        <div class="timer-val" id="live-countdown">00:00:00</div>
-        <div class="timer-note">
-            Your instructor is preparing the session.<br>
-            The link will activate <b>10 minutes</b> before class.
-        </div>
-        <button class="btn-close-timer" onclick="closeTimerModal()">Okay, I'll wait</button>
-    </div>
-</div>
+<div id="timer-modal"><div class="timer-box"><span class="material-icons-round" style="font-size:32px; color:#FCD34D; margin-bottom:10px;">hourglass_empty</span><div class="timer-label">CLASS STARTS IN</div><div class="timer-val" id="live-countdown">00:00:00</div><div class="timer-note">Your instructor is preparing the session.<br>The link will activate <b>10 minutes</b> before class.</div><button class="btn-close-timer" onclick="closeTimerModal()">Okay, I'll wait</button></div></div>
 
-<!-- RECOMMENDED BATCH MODAL (Fixed) -->
-<div id="rec-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:200; align-items:center; justify-content:center; backdrop-filter:blur(4px);">
-    <div style="background:white; padding:24px; border-radius:20px; width:85%; max-width:320px; text-align:center; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);">
+<!-- RECOMMENDED BATCH MODAL (Fixed Z-Index & Events) -->
+<div id="rec-modal">
+    <div>
         <h3 style="margin:0 0 10px; font-size:18px;">Best Match Found! ⚡</h3>
-        <p id="rec-text" style="color:#64748b; margin-bottom:20px; font-size:14px; line-height:1.5;"></p>
+        <p id="rec-text" style="color:#64748b; margin-bottom:16px; font-size:14px; line-height:1.5;"></p>
+        <div id="rec-timer-container" style="display:none;">
+            <div style="font-size:11px; font-weight:700; color:#64748B; text-transform:uppercase; letter-spacing:1px; margin-bottom:8px;">Class Starts In</div>
+            <div class="flip-timer" id="flip-timer"></div>
+        </div>
         <div style="display:flex; gap:10px;">
             <button id="btn-rec-no" style="flex:1; padding:12px; border:1px solid #e2e8f0; background:white; border-radius:12px; font-weight:600; color:#64748b; cursor:pointer;">View All</button>
             <button id="btn-rec-yes" style="flex:1; padding:12px; border:none; background:var(--shiksha-teal); color:white; border-radius:12px; font-weight:600; cursor:pointer;">Select</button>
@@ -662,664 +582,63 @@
     </div>
 </div>
 
-<!-- RESUME SESSION MODAL (Fixed) -->
-<div id="resume-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:200; align-items:center; justify-content:center; backdrop-filter:blur(4px);">
-    <div style="background:white; padding:24px; border-radius:20px; width:85%; max-width:320px; text-align:center; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);">
-        <h3 style="margin:0 0 8px; font-size:18px;">Resume Booking? 🔄</h3>
-        <p style="color:#64748b; margin-bottom:20px; font-size:14px; line-height:1.5;">We found a previous session. Want to continue where you left off?</p>
-        <div style="display:flex; gap:10px;">
-            <button id="resume-no" style="flex:1; padding:12px; border:1px solid #e2e8f0; background:white; border-radius:12px; font-weight:600; color:#64748b; cursor:pointer;">New</button>
-            <button id="resume-yes" style="flex:1; padding:12px; border:none; background:var(--shiksha-teal); color:white; border-radius:12px; font-weight:600; cursor:pointer;">Resume</button>
-        </div>
+<div id="resume-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:200; align-items:center; justify-content:center; backdrop-filter:blur(4px);"><div style="background:white; padding:24px; border-radius:20px; width:85%; max-width:320px; text-align:center; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);"><h3 style="margin:0 0 8px; font-size:18px;">Resume Booking? 🔄</h3><p style="color:#64748b; margin-bottom:20px; font-size:14px; line-height:1.5;">We found a previous session. Want to continue where you left off?</p><div style="display:flex; gap:10px;"><button id="resume-no" style="flex:1; padding:12px; border:1px solid #e2e8f0; background:white; border-radius:12px; font-weight:600; color:#64748b; cursor:pointer;">New</button><button id="resume-yes" style="flex:1; padding:12px; border:none; background:var(--shiksha-teal); color:white; border-radius:12px; font-weight:600; cursor:pointer;">Resume</button></div></div></div>
+
+<div id="discount-modal" class="discount-modal">
+    <div class="discount-card">
+        <div class="discount-close" onclick="closeDiscount()">×</div>
+        <div class="discount-badge">LIMITED TIME OFFER</div>
+        <h2 class="discount-title">Flat ₹4799 OFF!</h2>
+        <p style="font-size:14px; color:#64748B; margin-bottom:10px;">Book your TOEFL Exam today</p>
+        <div class="discount-price">₹13,200 <span class="discount-old">₹17,999</span></div>
+        <button class="discount-btn" onclick="window.open('https://www.shiksha.com/studyabroad/exams/toefl', '_blank')">Claim Discount Now</button>
     </div>
 </div>
 
 <script>
-    // --- CONFIGURATION ---
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwU0wWuoIfyi8_nRfSYLmnUVieG8qtF8PSk1K7Em5JUkQYh1qHL7BofKNkQGFB416OFbQ/exec"; 
-    const BATCHES = [
-        { id: "IELTS_B1", exam: "IELTS", type: "weekday", days: "Mon-Fri", startDay: 1, time: "11:00 - 12:00", trainer: "Prerna Kalra", form: "https://docs.google.com/forms/d/e/1FAIpQLSe8d_4IKF2_gkn1Z0TMYFMVdTnKSGDPomDXfnfZqr5wtQiR5w/viewform?usp=pp_url&entry.1946296942=11AM", wa: "https://chat.whatsapp.com/LsDcI5OpDUxDa6Bc6u2doI" },
-        { id: "IELTS_B6", exam: "IELTS", type: "weekend", days: "Sat-Sun", startDay: 6, time: "11:00 - 13:00", trainer: "Taru Thakur", form: "https://docs.google.com/forms/d/e/1FAIpQLSc-zVzdbUQOhaQd5_42x1Zzu_mjDYH82MKr-0ujsI34-43Vuw/viewform?usp=header", wa: "https://chat.whatsapp.com/Kgzj0ZfjEE1CgkCNrn4aei" },
-        { id: "IELTS_B2", exam: "IELTS", type: "weekday", days: "Mon-Fri", startDay: 1, time: "12:00 - 13:00", trainer: "Pallavi Rani", form: "https://docs.google.com/forms/d/e/1FAIpQLSdVRtcZnbRVcdxhYxmbWTUullQVdPYJoClZFe9mBwGerEkGfg/viewform?usp=header", wa: "https://chat.whatsapp.com/H9Nea5J7vab3Yr1TX5j5O3" },
-        { id: "TOEFL_B1", exam: "TOEFL", type: "weekday", days: "Mon-Fri", startDay: 1, time: "12:30 - 13:30", trainer: "Prerna Kalra", form: "https://docs.google.com/forms/d/e/1FAIpQLSdCqEdoyCzMdvbAfM4qlrjacTQaAJf6o9_Gj1cBOvg5q0sVaA/viewform?usp=publish-editor", wa: "https://chat.whatsapp.com/GllLRAubq8H8W6W8HFKhVQ" },
-        { id: "TOEFL_B2", exam: "TOEFL", type: "weekend", days: "Sat-Sun", startDay: 6, time: "14:00 - 16:00", trainer: "Taru Thakur", form: "https://docs.google.com/forms/d/e/1FAIpQLSetCJD5Bvm-GB3Fq0xA5tvAPdRCUV1qD7IkcwmrlNdsyLrPvg/viewform?usp=header", wa: "https://chat.whatsapp.com/IFoX5nsOMSVE47cglSxcBj" },
-        { id: "TOEFL_B4", exam: "TOEFL", type: "weekday", days: "Tue-Mon", startDay: 2, time: "14:00 - 15:00", trainer: "Prerna Kalra", form: "https://docs.google.com/forms/d/e/1FAIpQLScUm70q_gs2s9DEFXw8HN4LdfRM8pXnX2vPSE60Irc0XUF3Qg/viewform?usp=publish-editor", wa: "https://chat.whatsapp.com/CX1WX17eOUa1MnXL0XGKen" },
-        { id: "IELTS_B7", exam: "IELTS", type: "weekday", days: "Mon-Fri", startDay: 1, time: "15:00 - 16:00", trainer: "Pallavi Rani", form: "https://docs.google.com/forms/d/e/1FAIpQLSc1qNldXB7BsyFedDt7Letg1MQ60Q3KyEaIEut3hC7KXrvwPw/viewform?usp=header", wa: "https://chat.whatsapp.com/JAmmcrV3cLj60i8kgXsXjx" },
-        { id: "IELTS_B4", exam: "IELTS", type: "weekday", days: "Thu-Wed", startDay: 4, time: "16:00 - 17:00", trainer: "Pallavi Rani", form: "https://docs.google.com/forms/d/e/1FAIpQLSelOk48WfrXQN-FU4ZZKJqNYVz8hswpvKusU9rbV5MnY47jTg/viewform?usp=header", wa: "https://chat.whatsapp.com/GGglhKzOKlPAxnkKvyTeGC" },
-        { id: "IELTS_B5", exam: "IELTS", type: "weekday", days: "Mon-Fri", startDay: 1, time: "17:00 - 18:00", trainer: "Pallavi Rani", form: "https://docs.google.com/forms/d/e/1FAIpQLSczRyWNvZvnzXqzIwJWQ_r8u5-Pzko0WFmEBrkji5TjXTcinQ/viewform?usp=header", wa: "https://chat.whatsapp.com/CpM5unCnLWL3A05estqxwQ" },
-        { id: "TOEFL_B3", exam: "TOEFL", type: "weekday", days: "Wed-Fri", startDay: 3, time: "17:30 - 19:00", trainer: "Taru Thakur", form: "https://docs.google.com/forms/d/e/1FAIpQLScevsHaiUtzEiagpIp-hfIOBOD-fNj_247mepEgBvmCziJrzA/viewform?usp=header", wa: "https://chat.whatsapp.com/FVhIsUN0TNCL9htIo2D0kT" },
-        { id: "IELTS_B5_2", exam: "IELTS", type: "weekday", days: "Fri-Thu", startDay: 5, time: "18:00 - 19:00", trainer: "Prerna Kalra", form: "https://docs.google.com/forms/d/e/1FAIpQLSdAhflHn_yK66am9JgwmlCfVd1zEXc6gJHMvAJlXXZn40EwrA/viewform?usp=header", wa: "https://chat.whatsapp.com/L3rmaVHAx2n4GNmF4FO8Ig" },
-        { id: "IELTS_B8", exam: "IELTS", type: "weekend", days: "Sat-Sun", startDay: 6, time: "17:00 - 19:00", trainer: "Taru Thakur", form: "https://docs.google.com/forms/d/e/1FAIpQLSemRkFcLA6LUS9gtUEKEjS2C7I1ZIVD6mgb_voemWw0Jt98tQ/viewform?usp=header", wa: "https://chat.whatsapp.com/KLv1r8DQoFNFXQuuJTQEaq" }
-    ];
-    const COUNTRY_COURSE_MAP = { USA: ["MS", "MBA", "MIM", "Bachelors"], UK: ["MBA", "MIM", "MS", "Bachelors"], Canada: ["MS", "PG Diploma", "MBA", "Bachelors"], Australia: ["MS", "MBA", "Bachelors"], Germany: ["MS", "MIM", "Bachelors"], France: ["MIM", "MBA", "MS", "Bachelors"], UAE: ["MBA", "Bachelors", "MS"] };
-    
-    let state = { exam: 'IELTS', country: 'UK', batch: null, intake: 'Fall 26', ugScore: '> 50%', course: null, name: '', phone: '' };
+    const BATCHES = [ { id: "IELTS_B1", exam: "IELTS", type: "weekday", days: "Mon-Fri", startDay: 1, time: "11:00 - 12:00", trainer: "Prerna Kalra", form: "https://docs.google.com/forms/d/e/1FAIpQLSe8d_4IKF2_gkn1Z0TMYFMVdTnKSGDPomDXfnfZqr5wtQiR5w/viewform?usp=pp_url&entry.1946296942=11AM", wa: "https://chat.whatsapp.com/LsDcI5OpDUxDa6Bc6u2doI" }, { id: "IELTS_B6", exam: "IELTS", type: "weekend", days: "Sat-Sun", startDay: 6, time: "11:00 - 13:00", trainer: "Taru Thakur", form: "https://docs.google.com/forms/d/e/1FAIpQLSc-zVzdbUQOhaQd5_42x1Zzu_mjDYH82MKr-0ujsI34-43Vuw/viewform?usp=header", wa: "https://chat.whatsapp.com/Kgzj0ZfjEE1CgkCNrn4aei" }, { id: "IELTS_B2", exam: "IELTS", type: "weekday", days: "Mon-Fri", startDay: 1, time: "12:00 - 13:00", trainer: "Pallavi Rani", form: "https://docs.google.com/forms/d/e/1FAIpQLSdVRtcZnbRVcdxhYxmbWTUullQVdPYJoClZFe9mBwGerEkGfg/viewform?usp=header", wa: "https://chat.whatsapp.com/H9Nea5J7vab3Yr1TX5j5O3" }, { id: "TOEFL_B1", exam: "TOEFL", type: "weekday", days: "Mon-Fri", startDay: 1, time: "12:30 - 13:30", trainer: "Prerna Kalra", form: "https://docs.google.com/forms/d/e/1FAIpQLSdCqEdoyCzMdvbAfM4qlrjacTQaAJf6o9_Gj1cBOvg5q0sVaA/viewform?usp=publish-editor", wa: "https://chat.whatsapp.com/GllLRAubq8H8W6W8HFKhVQ" }, { id: "TOEFL_B2", exam: "TOEFL", type: "weekend", days: "Sat-Sun", startDay: 6, time: "14:00 - 16:00", trainer: "Taru Thakur", form: "https://docs.google.com/forms/d/e/1FAIpQLSetCJD5Bvm-GB3Fq0xA5tvAPdRCUV1qD7IkcwmrlNdsyLrPvg/viewform?usp=header", wa: "https://chat.whatsapp.com/IFoX5nsOMSVE47cglSxcBj" }, { id: "TOEFL_B4", exam: "TOEFL", type: "weekday", days: "Tue-Mon", startDay: 2, time: "14:00 - 15:00", trainer: "Prerna Kalra", form: "https://docs.google.com/forms/d/e/1FAIpQLScUm70q_gs2s9DEFXw8HN4LdfRM8pXnX2vPSE60Irc0XUF3Qg/viewform?usp=publish-editor", wa: "https://chat.whatsapp.com/CX1WX17eOUa1MnXL0XGKen" }, { id: "IELTS_B7", exam: "IELTS", type: "weekday", days: "Mon-Fri", startDay: 1, time: "15:00 - 16:00", trainer: "Pallavi Rani", form: "https://docs.google.com/forms/d/e/1FAIpQLSc1qNldXB7BsyFedDt7Letg1MQ60Q3KyEaIEut3hC7KXrvwPw/viewform?usp=header", wa: "https://chat.whatsapp.com/JAmmcrV3cLj60i8kgXsXjx" }, { id: "IELTS_B4", exam: "IELTS", type: "weekday", days: "Thu-Wed", startDay: 4, time: "16:00 - 17:00", trainer: "Pallavi Rani", form: "https://docs.google.com/forms/d/e/1FAIpQLSelOk48WfrXQN-FU4ZZKJqNYVz8hswpvKusU9rbV5MnY47jTg/viewform?usp=header", wa: "https://chat.whatsapp.com/GGglhKzOKlPAxnkKvyTeGC" }, { id: "IELTS_B5", exam: "IELTS", type: "weekday", days: "Mon-Fri", startDay: 1, time: "17:00 - 18:00", trainer: "Pallavi Rani", form: "https://docs.google.com/forms/d/e/1FAIpQLSczRyWNvZvnzXqzIwJWQ_r8u5-Pzko0WFmEBrkji5TjXTcinQ/viewform?usp=header", wa: "https://chat.whatsapp.com/CpM5unCnLWL3A05estqxwQ" }, { id: "TOEFL_B3", exam: "TOEFL", type: "weekday", days: "Wed-Fri", startDay: 3, time: "17:30 - 19:00", trainer: "Taru Thakur", form: "https://docs.google.com/forms/d/e/1FAIpQLScevsHaiUtzEiagpIp-hfIOBOD-fNj_247mepEgBvmCziJrzA/viewform?usp=header", wa: "https://chat.whatsapp.com/FVhIsUN0TNCL9htIo2D0kT" }, { id: "IELTS_B5_2", exam: "IELTS", type: "weekday", days: "Fri-Thu", startDay: 5, time: "18:00 - 19:00", trainer: "Prerna Kalra", form: "https://docs.google.com/forms/d/e/1FAIpQLSdAhflHn_yK66am9JgwmlCfVd1zEXc6gJHMvAJlXXZn40EwrA/viewform?usp=header", wa: "https://chat.whatsapp.com/L3rmaVHAx2n4GNmF4FO8Ig" }, { id: "IELTS_B8", exam: "IELTS", type: "weekend", days: "Sat-Sun", startDay: 6, time: "17:00 - 19:00", trainer: "Taru Thakur", form: "https://docs.google.com/forms/d/e/1FAIpQLSemRkFcLA6LUS9gtUEKEjS2C7I1ZIVD6mgb_voemWw0Jt98tQ/viewform?usp=header", wa: "https://chat.whatsapp.com/KLv1r8DQoFNFXQuuJTQEaq" } ];
+    const COUNTRY_DEGREE_MAP = { USA: ["Masters (MS)", "MBA", "Bachelors", "PhD"], UK: ["Masters (MSc/MA)", "MBA", "Bachelors", "PhD"], Canada: ["Masters", "PG Diploma", "MBA", "Bachelors"], Australia: ["Masters", "MBA", "Bachelors", "PhD"], Germany: ["Masters", "MIM", "Bachelors", "MBA"], France: ["Masters (MIM)", "MBA", "Bachelors", "MSc"], UAE: ["MBA", "Bachelors", "Masters"] };
+    const DEGREE_SPECIALIZATION_MAP = { 'USA': { 'Masters (MS)': ['Computer Science', 'Data Science', 'Business Analytics', 'Electrical Eng.', 'Mechanical Eng.'], 'MBA': ['General MBA', 'STEM MBA', 'Finance', 'Marketing', 'Entrepreneurship'], 'Bachelors': ['Computer Science', 'Engineering', 'Business Admin', 'Psychology', 'Economics'] }, 'UK': { 'Masters (MSc/MA)': ['Management', 'Data Science', 'Computer Science', 'Finance', 'Marketing'], 'MBA': ['Global MBA', 'Finance', 'Management', 'Executive MBA'], 'Bachelors': ['Law', 'Business', 'Economics', 'Art & Design', 'Psychology'] }, 'Canada': { 'Masters': ['Computer Science', 'Engineering', 'Data Science', 'Public Health'], 'PG Diploma': ['Business Management', 'Project Management', 'Supply Chain', 'Web Development'], 'MBA': ['General MBA', 'Finance', 'Technology Management'], 'Bachelors': ['Computer Science', 'Business', 'Engineering', 'Nursing'] }, 'Australia': { 'Masters': ['IT & Systems', 'Engineering', 'Accounting', 'Public Health'], 'MBA': ['General MBA', 'Accounting', 'Finance'], 'Bachelors': ['Nursing', 'Business', 'IT', 'Engineering'] }, 'Germany': { 'Masters': ['Automotive Eng.', 'Computer Science', 'Data Science', 'Mechanical Eng.'], 'MIM': ['General Management', 'International Business', 'Finance'], 'MBA': ['General MBA', 'Engineering Management'], 'Bachelors': ['Engineering', 'Business', 'Computer Science'] }, 'France': { 'Masters (MIM)': ['Management', 'Luxury Brand', 'Finance', 'Marketing'], 'MBA': ['Luxury Management', 'Global MBA', 'Fashion Management'], 'MSc': ['Data Science', 'Finance', 'International Business'] }, 'UAE': { 'MBA': ['General MBA', 'Executive MBA'], 'Bachelors': ['Business', 'Engineering', 'Computer Science'], 'Masters': ['Engineering', 'IT', 'Business'] }, 'default': ['Computer Science', 'Business', 'Engineering', 'Management'] };
+    const COUNTRY_THEMES = { 'USA': { primary: '#2563EB', light: '#EFF6FF', icon: '🗽' }, 'UK': { primary: '#1D4ED8', light: '#EFF6FF', icon: '💂' }, 'Canada': { primary: '#BE123C', light: '#FFF1F2', icon: '🍁' }, 'Australia': { primary: '#047857', light: '#ECFDF5', icon: '🦘' }, 'Germany': { primary: '#B45309', light: '#FFFBEB', icon: '🍺' }, 'France': { primary: '#4338CA', light: '#EEF2FF', icon: '🗼' }, 'UAE': { primary: '#B45309', light: '#FFFBEB', icon: '🏜️' }, 'default': { primary: '#00A5B5', light: '#E0F7FA', icon: '' } };
+
+    let state = { exam: 'IELTS', country: 'UK', batch: null, intake: 'Fall 26', ugScore: '> 50%', course: null, degree: null, name: '', phone: '', email: '', addons: [], offerApplied: false };
+    let popupTimerInterval;
+
+    function applyCountryTheme(country) {
+        const theme = COUNTRY_THEMES[country] || COUNTRY_THEMES['default'];
+        const root = document.documentElement;
+        root.style.setProperty('--shiksha-teal', theme.primary);
+        root.style.setProperty('--shiksha-teal-light', theme.light);
+        const iconEl = document.getElementById('themeIcon');
+        if(iconEl) { iconEl.innerText = theme.icon; iconEl.style.opacity = '0'; setTimeout(() => { iconEl.style.opacity = '0.05'; }, 100); }
+    }
 
     function haptic() { if (navigator.vibrate) navigator.vibrate(10); }
     function shake() { haptic(); const s = document.querySelector('.app-shell'); if(s) { s.classList.remove('shake'); void s.offsetWidth; s.classList.add('shake'); } }
 
-    /* --- LAZY INPUT: VOICE & PASTE --- */
     function startVoiceInput(btn) {
-        if (!('webkitSpeechRecognition' in window)) {
-            alert("Voice input not supported in this browser.");
-            return;
-        }
+        if (!('webkitSpeechRecognition' in window)) { alert("Voice input not supported in this browser."); return; }
         const recognition = new webkitSpeechRecognition();
-        recognition.continuous = false;
-        recognition.interimResults = false;
-        
+        recognition.continuous = false; recognition.interimResults = false;
         btn.classList.add('listening');
-        
-        recognition.onresult = function(event) {
-            const transcript = event.results[0][0].transcript;
-            parseInput(transcript);
-            btn.classList.remove('listening');
-        };
-        
-        recognition.onerror = function() {
-            btn.classList.remove('listening');
-        };
-        
+        recognition.onresult = function(event) { const transcript = event.results[0][0].transcript; parseInput(transcript); btn.classList.remove('listening'); };
+        recognition.onerror = function() { btn.classList.remove('listening'); };
         recognition.start();
     }
     
     function parseInput(text) {
         const phoneMatch = text.match(/[6-9]\d{9}/);
-        if(phoneMatch) {
-            document.getElementById('inpPhone').value = phoneMatch[0].replace(/(\d{5})(\d{5})/, "$1 $2");
-            autoFormatPhone(document.getElementById('inpPhone'));
-        }
-        
+        if(phoneMatch) { document.getElementById('inpPhone').value = phoneMatch[0].replace(/(\d{5})(\d{5})/, "$1 $2"); autoFormatPhone(document.getElementById('inpPhone')); }
         let cleanText = text.replace(/[0-9\-\+\(\)]/g, '').replace(/my name is/i, '').replace(/phone/i, '').replace(/number/i, '').trim();
-        if(cleanText.length > 2) {
-            const words = cleanText.split(' ').filter(w => w.length > 1);
-            if(words.length > 0) {
-                 document.getElementById('inpName').value = words.slice(0, 2).join(' ');
-                 validateName(document.getElementById('inpName'));
-            }
-        }
+        if(cleanText.length > 2) { const words = cleanText.split(' ').filter(w => w.length > 1); if(words.length > 0) { document.getElementById('inpName').value = words.slice(0, 2).join(' '); validateName(document.getElementById('inpName')); } }
     }
     
-    // SMART ENTER KEY & PASTE
-    document.addEventListener("DOMContentLoaded", () => {
-        const inputs = [document.getElementById('inpName'), document.getElementById('inpPhone')];
-        inputs.forEach(inp => {
-            if(!inp) return;
-            // PASTE
-            inp.addEventListener('paste', (e) => {
-                const text = (e.clipboardData || window.clipboardData).getData('text');
-                if(/[A-Za-z]/.test(text) && /\d/.test(text)) {
-                    e.preventDefault();
-                    parseInput(text);
-                }
-            });
-            // ENTER KEY
-            inp.addEventListener('keydown', (e) => {
-                if(e.key === 'Enter') finish();
-            });
-        });
-
-        // SMART GREETING
-        const h = new Date().getHours();
-        const greet = h < 12 ? "Good Morning ☀️" : (h < 17 ? "Good Afternoon 🌤️" : "Good Evening 🌙");
-        document.getElementById('greeting').innerText = greet;
-    });
-
-    function validateName(el) {
-        const name = el.value.trim();
-        const header = document.getElementById('passenger-header');
-        
-        if (name.length < 2) {
-            el.classList.remove('valid');
-            if(header) { header.innerText = "Passenger Info 🪪"; header.style.color = "var(--shiksha-dark)"; }
-            return false;
-        }
-        el.classList.add('valid');
-        state.name = name;
-        if(header) { header.innerText = `Welcome, ${name.split(' ')[0]} 👋`; header.style.color = "var(--shiksha-teal)"; }
-        
-        document.getElementById('target-degree-section').style.display = 'block';
-        if (!state.courseChipsRendered && state.country) {
-            renderCourseChips(state.country);
-            state.courseChipsRendered = true;
-        }
-        return true;
-    }
-
-    function autoFormatPhone(el) {
-        let raw = el.value.replace(/\D/g, ''); raw = raw.slice(0, 10); el.value = raw.replace(/(\d{5})(\d{5})/, "$1 $2");
-        const isIndian = /^[6-9]\d{9}$/.test(raw);
-        if (isIndian) { 
-            el.classList.add('valid'); 
-            document.getElementById('phone-error').style.display = 'none'; 
-            state.phone = '+91' + raw; 
-            if (raw.length === 10) setTimeout(() => document.getElementById('inpName').focus(), 150); 
-        } 
-        else { 
-            el.classList.remove('valid'); 
-            state.phone = null; 
-            if(raw.length > 0 && !/^[6-9]/.test(raw)) document.getElementById('phone-error').style.display = 'block'; 
-        }
-        
-        /* --- SMART COUNTRY CODE UPDATE --- */
-        const ccEl = document.getElementById('phone-cc');
-        if(state.country && ccEl) {
-             const codeMap = { 'USA': '+1', 'UK': '+44', 'Canada': '+1', 'Australia': '+61', 'UAE': '+971', 'Germany': '+49', 'France': '+33' };
-             if(codeMap[state.country]) ccEl.innerText = codeMap[state.country];
-             else ccEl.innerText = "+91"; 
-        }
-    }
-
-    /* --- LIVE COUNTDOWN LOGIC --- */
-    let countdownInterval;
-
-    function checkJoinTime() {
-        if (!state.batch || !state.classTimestamp) return;
-
-        const now = Date.now();
-        const diff = state.classTimestamp - now;
-        const tenMins = 10 * 60 * 1000;
-
-        if (diff > tenMins) {
-            document.getElementById('timer-modal').style.display = 'flex';
-            startLiveCountdown(diff);
-        } else {
-            // WHATSAPP PRE-FILL
-            const msg = `Hi! I am ${state.name} (ID: ${document.getElementById('tkt-id').innerText}). I want to join the ${state.exam} class.`;
-            const waUrl = `${state.batch.wa}?text=${encodeURIComponent(msg)}`;
-            window.open(waUrl, '_blank');
-        }
-    }
-
-    function startLiveCountdown(initialDiff) {
-        const display = document.getElementById('live-countdown');
-        if(countdownInterval) clearInterval(countdownInterval);
-
-        const update = () => {
-            const now = Date.now();
-            const diff = state.classTimestamp - now;
-
-            if (diff <= (10 * 60 * 1000)) {
-                clearInterval(countdownInterval);
-                closeTimerModal();
-                const msg = `Hi! I am ${state.name} (ID: ${document.getElementById('tkt-id').innerText}). I want to join the ${state.exam} class.`;
-                const waUrl = `${state.batch.wa}?text=${encodeURIComponent(msg)}`;
-                window.open(waUrl, '_blank'); 
-                return;
-            }
-
-            const h = Math.floor((diff / (1000 * 60 * 60)));
-            const m = Math.floor((diff / (1000 * 60)) % 60);
-            const s = Math.floor((diff / 1000) % 60);
-
-            display.innerText = 
-                `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
-        };
-
-        update(); 
-        countdownInterval = setInterval(update, 1000);
-    }
-
-    function closeTimerModal() {
-        document.getElementById('timer-modal').style.display = 'none';
-        if(countdownInterval) clearInterval(countdownInterval);
-    }
-
-    /* --- SNAP TICKET LOGIC (IMAGE) --- */
-    function saveTicketSnapshot() {
-        const ticketEl = document.querySelector('.ticket-face'); 
-        if(!ticketEl) return;
-        
-        const scene = document.querySelector('.ticket-scene');
-        scene.style.animation = 'none';
-        scene.style.transform = 'none';
-        
-        html2canvas(ticketEl, { 
-            scale: 2, 
-            useCORS: true, 
-            backgroundColor: null,
-            onclone: (clonedDoc) => {
-                const clonedHint = clonedDoc.querySelector('.tap-hint');
-                if(clonedHint) clonedHint.style.display = 'none';
-            }
-        }).then(canvas => {
-            const link = document.createElement('a');
-            link.download = `BoardingPass_${state.name.split(' ')[0]}.png`;
-            link.href = canvas.toDataURL();
-            link.click();
-            
-            scene.style.animation = 'floatTicket 6s ease-in-out infinite';
-        });
-    }
-
-    /* --- FINISH LOGIC (UPDATED WITH LAZY DEFAULT) --- */
-    function finish() {
-        haptic();
-        
-        const nameInput = document.getElementById('inpName');
-        const phoneInput = document.getElementById('inpPhone');
-        const errorEl = document.getElementById('error-msg');
-        
-        state.name = nameInput.value.trim();
-        const rawPhone = phoneInput.value.replace(/\D/g, '');
-        if(/^[6-9]\d{9}$/.test(rawPhone)) state.phone = '+91' + rawPhone;
-
-        // --- LAZY FIX: AUTO-SELECT DEGREE IF MISSING ---
-        if (!state.course) {
-             const firstChip = document.querySelector('#course-chips .chip');
-             if(firstChip) firstChip.click();
-             else state.course = "Masters"; 
-        }
-
-        const isNameValid = state.name && state.name.length >= 2;
-        const isPhoneValid = state.phone && state.phone.length >= 12;
-
-        if (!isNameValid || !isPhoneValid) {
-            shake();
-            if(errorEl) { errorEl.style.display = 'block'; errorEl.innerText = "⚠️ Please enter a valid Name and WhatsApp Number."; }
-            if(!isNameValid) nameInput.classList.add('invalid');
-            if(!isPhoneValid) phoneInput.classList.add('invalid');
-            return;
-        }
-
-        // PREPARE DATA
-        const firstName = state.name.split(' ')[0].toUpperCase();
-        
-        const d = new Date();
-        const todayDay = d.getDay(); 
-        const startDay = state.batch ? state.batch.startDay : 1;
-        
-        let daysAhead = (startDay - todayDay + 7) % 7;
-        
-        if(state.batch) {
-             const timeStr = state.batch.time.split('-')[0].trim();
-             const [h, m] = timeStr.split(':');
-             const classTimeToday = new Date();
-             classTimeToday.setHours(parseInt(h), parseInt(m), 0, 0);
-             
-             if (daysAhead === 0 && classTimeToday < new Date()) {
-                 daysAhead = 7; 
-             }
-        }
-        
-        d.setDate(d.getDate() + daysAhead);
-        
-        if(state.batch) {
-             const timeStr = state.batch.time.split('-')[0].trim();
-             const [h, m] = timeStr.split(':');
-             d.setHours(parseInt(h), parseInt(m), 0, 0);
-             state.classTimestamp = d.getTime();
-        }
-
-        const startDayStr = d.toLocaleDateString('en-US', { weekday: 'long' });
-        const startDateStr = d.toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' });
-        
-        const isWeekend = state.batch && state.batch.type === 'weekend';
-        const weeks = isWeekend ? 10 : 4; 
-        const endDateObj = new Date(d);
-        endDateObj.setDate(d.getDate() + (weeks * 7));
-        const endDateStr = endDateObj.toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' });
-
-        const sid = Math.floor(Math.random() * 90000) + 10000;
-
-        // FILL UI
-        if(document.getElementById('tkt-name')) document.getElementById('tkt-name').innerText = firstName;
-        if(document.getElementById('tkt-exam')) document.getElementById('tkt-exam').innerText = state.exam || 'EXAM';
-        if(document.getElementById('tkt-date')) document.getElementById('tkt-date').innerText = startDateStr;
-        if(document.getElementById('tkt-day')) document.getElementById('tkt-day').innerText = startDayStr;
-        if(document.getElementById('tkt-end-date')) document.getElementById('tkt-end-date').innerText = endDateStr;
-        if(document.getElementById('tkt-time')) document.getElementById('tkt-time').innerText = state.batch ? state.batch.time : "";
-        
-        if(document.getElementById('tkt-days-week')) {
-            document.getElementById('tkt-days-week').innerText = state.batch ? state.batch.days : "Weekly";
-        }
-
-        if(document.getElementById('tkt-id')) document.getElementById('tkt-id').innerText = sid;
-        if(document.getElementById('tkt-id-back')) document.getElementById('tkt-id-back').innerText = sid;
-        
-        if(document.getElementById('bk-country')) document.getElementById('bk-country').innerText = state.country;
-        if(document.getElementById('bk-intake')) document.getElementById('bk-intake').innerText = state.intake;
-        if(document.getElementById('bk-course')) document.getElementById('bk-course').innerText = state.course;
-        if(document.getElementById('bk-score')) document.getElementById('bk-score').innerText = state.ugScore;
-        if(document.getElementById('bk-trainer')) document.getElementById('bk-trainer').innerText = state.batch ? state.batch.trainer : "Expert";
-
-        // Generate QR - Front
-        const qrFront = document.getElementById("qrcode-front");
-        if (qrFront) {
-            qrFront.innerHTML = '';
-            new QRCode(qrFront, { text: state.batch ? state.batch.wa : "https://shiksha.com", width: 128, height: 128, correctLevel: QRCode.CorrectLevel.L });
-        }
-        
-        // Generate QR - Back
-        const qrBack = document.getElementById("qrcode-back");
-        if (qrBack) {
-            qrBack.innerHTML = '';
-            new QRCode(qrBack, { text: state.batch ? state.batch.wa : "https://shiksha.com", width: 128, height: 128, correctLevel: QRCode.CorrectLevel.L });
-        }
-
-        persistState();
-        next(3);
-        
-        // ASYNC TASKS
-        setTimeout(() => {
-            const payload = { name: state.name, phone: state.phone, exam: state.exam, batch: state.batch ? state.batch.time : 'Not Selected', country: state.country, course: state.course };
-            submitToGoogleSheet(payload);
-
-            if(typeof confetti !== 'undefined') confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
-        }, 300);
-    }
-    
-    // Add missing submitToGoogleSheet function
-    function submitToGoogleSheet(data) {
-        if(!SCRIPT_URL) return;
-        const formData = new FormData();
-        for(const key in data) formData.append(key, data[key]);
-        fetch(SCRIPT_URL, { method: 'POST', body: formData, mode: 'no-cors' })
-            .then(() => console.log("Submitted"))
-            .catch(e => console.error("Error", e));
-    }
-
-    // --- RESTORE SESSION (LAZY) ---
-    function restoreSession() {
-         if (typeof window.SAVED_STATE !== 'undefined') {
-            state = window.SAVED_STATE;
-            renderTicketUI(); // Skip straight to ticket
-        } else {
-             // Fallback: Check local storage
-             const data = localStorage.getItem('boardingData'); 
-             if (data) {
-                 try { 
-                     const prev = JSON.parse(data);
-                     state = { ...state, ...prev };
-                     renderTicketUI();
-                 } catch(e) {}
-             }
-        }
-    }
-
-    // Helper to render ticket without animation delay (for restore)
-    function renderTicketUI() {
-        document.querySelectorAll('.slide').forEach(s => s.classList.remove('active'));
-        document.getElementById('slide-4').classList.add('active');
-        document.querySelectorAll('.flight-step').forEach(s => s.classList.add('done'));
-        
-        // Populate Data
-        const d = new Date();
-        const dateStr = d.toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' });
-        
-        if(document.getElementById('tkt-name')) document.getElementById('tkt-name').innerText = state.name ? state.name.split(' ')[0].toUpperCase() : "STUDENT";
-        if(document.getElementById('tkt-exam')) document.getElementById('tkt-exam').innerText = state.exam;
-        
-        // ... (Re-run population logic) ...
-        // For simplicity, we just re-run finish() logic without the submission/confetti
-        // Or better, let finish() handle it but suppress confetti
-    }
-
-    function next(id) {
-        if(id===1 && !state.country) return shake();
-        if(id===2 && !state.batch) return shake();
-        document.getElementById('slide-'+id).classList.remove('active');
-        document.getElementById('slide-'+id).classList.add('prev');
-        const nextSlide = document.getElementById('slide-'+(id+1));
-        if(nextSlide) { nextSlide.classList.remove('next'); nextSlide.classList.add('active'); }
-        
-        const stepEls = document.querySelectorAll('.flight-step');
-        if(stepEls[id-1]) { stepEls[id-1].classList.add('done'); stepEls[id-1].classList.remove('active'); }
-        if(stepEls[id]) stepEls[id].classList.add('active');
-
-        if (id === 1) { const rec = getRecommendedBatch(); state.batchRecommended = rec; showRecommendedPopup(rec); }
-        if (id === 2) { renderCourseChips(state.country); }
-    }
-
-    function setExam(v, el) {
-        haptic(); state.exam = v;
-        document.querySelectorAll('.exam-opt').forEach(e => e.classList.remove('selected'));
-        el.classList.add('selected');
-        const container = document.querySelector('.exam-toggle');
-        const index = Array.from(container.children).indexOf(el); 
-        if (index === 2) container.setAttribute('data-selected', 'right'); else container.removeAttribute('data-selected');
-        const btn = document.getElementById('swipeBtn');
-        const txtSuccess = document.getElementById('swipeTextSuccess');
-        if(btn) { 
-            btn.style.transform = `translateX(0px)`; 
-            btn.innerHTML = '<span class="material-icons-round">arrow_forward</span>';
-            document.getElementById('swipeFill').style.width = '0px'; 
-            document.getElementById('swipeText').style.opacity = 1; 
-            if(txtSuccess) txtSuccess.style.opacity = 0;
-        }
-        state.batch = null; renderSlots('weekday');
-        initSwipeLogic();
-    }
-    
-    function setChip(el, key, value) {
-        haptic(); state[key] = value;
-        el.parentElement.querySelectorAll('.chip').forEach(c => c.classList.remove('selected'));
-        el.classList.add('selected');
-        if (key === 'country') renderCourseChips(value);
-        if (key === 'course') document.getElementById('error-msg').style.display = 'none';
-    }
-
-    function setScore(el, v) {
-        haptic(); state.ugScore = v;
-        document.querySelectorAll('.score-opt').forEach(c=>c.classList.remove('active'));
-        el.classList.add('active');
-    }
-
-    function renderSlots(type) {
-        haptic();
-        const area = document.getElementById('slots-area'); 
-        if(!area) return;
-        area.innerHTML = '';
-        document.getElementById('tab-wk').classList.toggle('selected', type==='weekday');
-        document.getElementById('tab-we').classList.toggle('selected', type==='weekend');
-        const list = BATCHES.filter(b => b.exam === state.exam && b.type === type);
-        if(!list.length) { area.innerHTML = '<div style="text-align:center;color:#94a3b8;margin-top:20px;">No slots available.</div>'; return; }
-        list.forEach(b => {
-            let tagHTML = '';
-            const rand = Math.random();
-            if (rand > 0.7) tagHTML = '<span class="tag-urgent">Only 2 Seats Left</span>';
-            else if (rand > 0.4) tagHTML = '<span class="tag-popular">Filling Fast</span>';
-            const div = document.createElement('div'); div.className = 'slot-row';
-            div.innerHTML = `<div style="flex:1"><div style="display:flex; align-items:center;"><div style="font-weight:700;font-size:16px">${b.time}</div>${tagHTML}</div><div style="font-size:13px;color:#64748b;margin-top:2px;">${b.days} • ${b.trainer}</div></div><span class="material-icons-round slot-check">radio_button_unchecked</span>`;
-            if (state.batchRecommended && state.batchRecommended.id === b.id) {
-                const tag = document.createElement('div'); tag.innerText = "Recommended"; tag.style = "background:#ECFDF5;color:#059669;border:1px solid #A7F3D0;font-size:10px;padding:2px 6px;border-radius:6px;font-weight:700;display:inline-block;margin-bottom:3px;"; div.prepend(tag);
-            }
-            div.onclick = () => {
-                haptic(); state.batch = b;
-                document.querySelectorAll('.slot-row').forEach(r => { r.classList.remove('active'); r.querySelector('.slot-check').innerText='radio_button_unchecked'; });
-                div.classList.add('active'); div.querySelector('.slot-check').innerText='check_circle';
-                setTimeout(() => next(2), 400); 
-            };
-            area.appendChild(div);
-        });
-    }
-
-    function renderCourseChips(country) {
-        const container = document.getElementById('course-chips');
-        if (!container) return;
-        container.innerHTML = ''; state.course = null;
-        const list = COUNTRY_COURSE_MAP[country] || [];
-        list.forEach(item => {
-            const chip = document.createElement('div'); chip.className = 'chip'; chip.innerText = item;
-            chip.onclick = () => {
-                state.course = item; container.querySelectorAll('.chip').forEach(c => c.classList.remove('selected'));
-                chip.classList.add('selected'); const inp = document.getElementById('custom-course-input'); if (inp) inp.remove();
-                if(document.getElementById('error-msg')) document.getElementById('error-msg').style.display='none';
-            };
-            container.appendChild(chip);
-        });
-        const other = document.createElement('div'); other.className = 'chip'; other.innerText = 'Other';
-        other.onclick = () => {
-            container.querySelectorAll('.chip').forEach(c => c.classList.remove('selected')); other.classList.add('selected');
-            if (document.getElementById('custom-course-input')) return;
-            const inp = document.createElement('input'); inp.type = 'text'; inp.id = 'custom-course-input'; inp.className = 'minimal-input'; inp.placeholder = 'Type your course'; inp.style.marginTop = '10px';
-            inp.oninput = () => { state.course = inp.value.trim(); };
-            container.appendChild(inp); inp.focus();
-        };
-        container.appendChild(other);
-    }
-
-    function getRecommendedBatch() {
-        const now = new Date(); const today = now.getDay(); const currentMinutes = now.getHours() * 60 + now.getMinutes();
-        const list = BATCHES.filter(b => b.exam === state.exam); if (!list.length) return null;
-        const toMinutes = (t) => { const [h, m] = t.split(':').map(Number); return h * 60 + m; };
-        const enriched = list.map(b => { const startTime = b.time.split('-')[0].trim(); return { ...b, startMinutes: toMinutes(startTime) }; });
-        const groupA = enriched.filter(b => b.startDay === today && b.startMinutes > currentMinutes);
-        const groupB = enriched.filter(b => b.startDay !== today);
-        const sortByStartTime = (arr) => arr.sort((a, b) => a.startMinutes - b.startMinutes);
-        const sortByDayThenTime = (arr) => arr.sort((a, b) => {
-            const dayDiffA = (a.startDay - today + 7) % 7; const dayDiffB = (b.startDay - today + 7) % 7;
-            if (dayDiffA !== dayDiffB) return dayDiffA - dayDiffB; return a.startMinutes - b.startMinutes;
-        });
-        if (groupA.length > 0) return sortByStartTime(groupA)[0];
-        if (groupB.length > 0) return sortByDayThenTime(groupB)[0];
-        return enriched[0];
-    }
-    
-    function showRecommendedPopup(batch) {
-        if(!batch) return;
-        
-        let urgencyHTML = "";
-        const now = new Date();
-        
-        // Check if batch is today and in future
-        if (batch.startDay === now.getDay()) {
-             const [h, m] = batch.time.split('-')[0].trim().split(':').map(Number);
-             const batchDate = new Date();
-             batchDate.setHours(h, m, 0, 0);
-             
-             const diff = batchDate - now;
-             if (diff > 0) {
-                 const hrs = Math.floor(diff / (1000 * 60 * 60));
-                 const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-                 
-                 const timeText = hrs > 0 ? `${hrs}hr ${mins}min` : `${mins}min`;
-                 urgencyHTML = `<div style="margin-top:8px;"><span style="background:#FEF2F2; color:#DC2626; border:1px solid #FECACA; padding:4px 10px; border-radius:100px; font-size:11px; font-weight:700; display:inline-flex; align-items:center; gap:4px;"><span class="material-icons-round" style="font-size:12px">timer</span> Starts in ${timeText}</span></div>`;
-             }
-        }
-
-        const text = `<span style="font-size:15px; font-weight:600; color:#334155;">${batch.days} • ${batch.time}</span>`;
-        document.getElementById('rec-text').innerHTML = `${text}${urgencyHTML}`;
-        document.getElementById('rec-modal').style.display = 'flex';
-    }
-    
-    // Safely attach listeners
-    document.addEventListener("DOMContentLoaded", () => {
-        const btnRecYes = document.getElementById('btn-rec-yes');
-        if(btnRecYes) btnRecYes.onclick = () => { state.batch = state.batchRecommended; document.getElementById('rec-modal').style.display = 'none'; next(2); };
-        
-        const btnRecNo = document.getElementById('btn-rec-no');
-        if(btnRecNo) btnRecNo.onclick = () => { document.getElementById('rec-modal').style.display = 'none'; renderSlots('weekday'); document.getElementById('slide-2').classList.add('active'); };
-        
-        // Also attach resume listeners
-        const btnResumeYes = document.getElementById('resume-yes');
-        const btnResumeNo = document.getElementById('resume-no');
-        const modalResume = document.getElementById('resume-modal');
-        
-        if(btnResumeYes) btnResumeYes.onclick = () => { 
-            const data = localStorage.getItem('boardingData');
-            if(data) fillFromSaved(JSON.parse(data)); 
-            modalResume.style.display = 'none'; 
-        };
-        if(btnResumeNo) btnResumeNo.onclick = () => { 
-            localStorage.removeItem('boardingData'); 
-            modalResume.style.display = 'none'; 
-        };
-    });
-
     function persistState() {
         const save = { country: state.country, course: state.course, intake: state.intake, phone: state.phone, name: state.name };
         localStorage.setItem('boardingData', JSON.stringify(save));
     }
-
-    function initSwipeLogic() {
-        const track = document.getElementById('swipeTrack');
-        const btn = document.getElementById('swipeBtn');
-        const fill = document.getElementById('swipeFill');
-        const txt = document.getElementById('swipeText');
-        const txtSuccess = document.getElementById('swipeTextSuccess');
-        if(!btn) return;
-        let isDragging = false, startX = 0, startTime = 0;
-        const MAGNET_THRESHOLD_PCT = 0.40; 
-        const resetSwipe = () => { isDragging = false; btn.style.transition = 'transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)'; fill.style.transition = 'width 0.3s'; btn.style.transform = `translateX(0px)`; fill.style.width = '0px'; txt.style.opacity = 1; };
-        const successSwipe = (maxDist) => {
-            isDragging = false; btn.style.transition = 'transform 0.25s cubic-bezier(0.4, 1.2, 0.4, 1)'; fill.style.transition = 'width 0.25s'; btn.style.transform = `translateX(${maxDist}px)`; fill.style.width = '100%'; txt.style.opacity = 0;
-            haptic(); setTimeout(() => { if(txtSuccess) txtSuccess.style.opacity = 1; btn.innerHTML = '<span class="material-icons-round">check</span>'; next(1); }, 250);
-        };
-        const handleStart = (e) => { if(!state.country) { shake(); return; } isDragging = true; startX = e.pageX || e.touches[0].pageX; startTime = Date.now(); btn.style.transition = 'none'; fill.style.transition = 'none'; haptic(); };
-        const handleMove = (e) => {
-            if(!isDragging) return;
-            const x = e.pageX || e.touches[0].pageX; const diff = x - startX;
-            if(Math.abs(diff) > 5 && e.cancelable) e.preventDefault(); 
-            const max = track.offsetWidth - btn.offsetWidth - 12;
-            if (diff >= 0 && diff <= max) { btn.style.transform = `translateX(${diff}px)`; fill.style.width = `${diff + 30}px`; txt.style.opacity = 1 - (diff / max); }
-        };
-        const handleEnd = () => {
-            if (!isDragging) return;
-            const max = track.offsetWidth - btn.offsetWidth - 12;
-            const timeTaken = Date.now() - startTime;
-            const currentStyle = btn.style.transform;
-            const currentMatch = currentStyle.match(/translateX\((.*)px\)/);
-            const current = currentMatch ? parseFloat(currentMatch[1]) : 0;
-            const isClick = Math.abs(current) < 5 && timeTaken < 300;
-            const isMagnetic = current > (max * MAGNET_THRESHOLD_PCT); 
-            if (isClick || isMagnetic) successSwipe(max); else resetSwipe();
-        };
-        btn.addEventListener('mousedown', handleStart); btn.addEventListener('touchstart', handleStart, {passive: false});
-        window.addEventListener('mousemove', handleMove); window.addEventListener('touchmove', handleMove, {passive: false});
-        window.addEventListener('mouseup', handleEnd); window.addEventListener('touchend', handleEnd);
-    }
     
-    document.addEventListener("DOMContentLoaded", () => {
-        
-        // CHECK FOR SAVED STATE (From Downloaded File)
-        if (typeof window.SAVED_STATE !== 'undefined') {
-            state = window.SAVED_STATE;
-            // Restore UI for slide 4
-            document.querySelectorAll('.slide').forEach(s => s.classList.remove('active'));
-            document.getElementById('slide-4').classList.add('active');
-            
-            // Mark steps as done
-            document.querySelectorAll('.flight-step').forEach(s => s.classList.add('done'));
-            
-            // Render Ticket
-            renderTicketUI();
-        } else {
-            // Normal Load
-            renderSlots('weekday'); 
-            checkResume(); 
-            initSwipeLogic();
-        }
-        
-        // Input Listeners
-        document.getElementById('inpPhone').addEventListener('input', function() { autoFormatPhone(this); });
-        const nameInput = document.getElementById('inpName');
-        nameInput.addEventListener('beforeinput', (e) => { const allowed = /^[A-Za-z\s.'-]+$/; if (e.data && !allowed.test(e.data)) e.preventDefault(); });
-        nameInput.addEventListener('input', function() {
-            this.value = this.value.replace(/[^A-Za-zÀ-ÖØ-öø-ÿ\s.'-]/g, ""); 
-            validateName(this);
-        });
-
-        startTimer();
-    });
-
-    function checkResume() {
-        const data = localStorage.getItem('boardingData'); if (!data) return;
-        try { const prev = JSON.parse(data); showResumeModal(prev); } catch(e) { localStorage.removeItem('boardingData'); }
-    }
-    function showResumeModal(data) {
-        state = { ...state, ...data }; 
-        const modal = document.getElementById('resume-modal');
-        if(modal) modal.style.display = 'flex';
-    }
-    function fillFromSaved(d) {
-        if (d.phone) document.getElementById('inpPhone').value = d.phone.slice(3).replace(/(\d{5})(\d{5})/, "$1 $2");
-        if (d.name) { document.getElementById('inpName').value = d.name; validateName(document.getElementById('inpName')); }
-        if (d.country) document.querySelectorAll('#country-chips .chip').forEach(c => c.classList.toggle('selected', c.innerText === d.country));
-        if (d.course) { renderCourseChips(d.country); setTimeout(() => document.querySelectorAll('#course-chips .chip').forEach(c => c.classList.toggle('selected', c.innerText.includes(d.course))), 50); }
-        if (d.intake) document.querySelectorAll('.chip-cloud .chip').forEach(c => { if (c.innerText.includes(d.intake)) c.classList.add('selected'); });
-    }
-
     function startTimer() {
         const timerEl = document.getElementById('timer'); const pillEl = document.getElementById('timerPill');
         let timeLeft = parseInt(localStorage.getItem('shiksha_timer') || 600); if(timeLeft <= 0) timeLeft = 600; 
@@ -1330,32 +649,450 @@
         updateDisplay(); 
         setInterval(() => { if (timeLeft > 0) { timeLeft--; if (timeLeft % 10 === 0) localStorage.setItem('shiksha_timer', timeLeft); updateDisplay(); } }, 1000);
     }
+    
+    // SAFE DOM INIT
+    document.addEventListener("DOMContentLoaded", () => {
+        const inputs = [document.getElementById('inpName'), document.getElementById('inpPhone'), document.getElementById('inpEmail')];
+        inputs.forEach(inp => { if(!inp) return; inp.addEventListener('paste', (e) => { const text = (e.clipboardData || window.clipboardData).getData('text'); if(/[A-Za-z]/.test(text) && /\d/.test(text)) { e.preventDefault(); parseInput(text); } }); inp.addEventListener('keydown', (e) => { if(e.key === 'Enter') finish(); }); });
+        const h = new Date().getHours(); const greet = h < 12 ? "Good Morning ☀️" : (h < 17 ? "Good Afternoon 🌤️" : "Good Evening 🌙");
+        document.getElementById('greeting').innerText = greet;
+        applyCountryTheme(state.country);
+        startTimer();
+        initSwipeLogic(); // Init Swipe
+        setupModalListeners(); // Init Modal Buttons
+    });
+    
+    function setupModalListeners() {
+        const btnRecYes = document.getElementById('btn-rec-yes');
+        if(btnRecYes) btnRecYes.onclick = () => { 
+            if(popupTimerInterval) clearInterval(popupTimerInterval);
+            state.batch = state.batchRecommended; 
+            document.getElementById('rec-modal').style.display = 'none'; 
+            next(2); 
+        };
+        
+        const btnRecNo = document.getElementById('btn-rec-no');
+        if(btnRecNo) btnRecNo.onclick = () => { 
+            if(popupTimerInterval) clearInterval(popupTimerInterval);
+            document.getElementById('rec-modal').style.display = 'none'; 
+            renderSlots('weekday'); 
+            document.getElementById('slide-2').classList.add('active'); 
+        };
+        
+        const btnResumeYes = document.getElementById('resume-yes');
+        const btnResumeNo = document.getElementById('resume-no');
+        const modalResume = document.getElementById('resume-modal');
+        if(btnResumeYes) btnResumeYes.onclick = () => { 
+            const data = localStorage.getItem('boardingData');
+            if(data) fillFromSaved(JSON.parse(data)); 
+            modalResume.style.display = 'none'; 
+        };
+        if(btnResumeNo) btnResumeNo.onclick = () => { 
+            localStorage.removeItem('boardingData'); 
+            modalResume.style.display = 'none'; 
+        };
+    }
 
-    function addClassToCalendar() {
+    function validateName(el) {
+        const name = el.value.trim(); const header = document.getElementById('passenger-header');
+        if (name.length < 2) { el.classList.remove('valid'); if(header) { header.innerText = "Passenger Info 🪪"; header.style.color = "var(--shiksha-dark)"; } return false; }
+        el.classList.add('valid'); state.name = name; if(header) { header.innerText = `Welcome, ${name.split(' ')[0]} 👋`; header.style.color = "var(--shiksha-teal)"; }
+        document.getElementById('target-degree-section').style.display = 'block';
+        if (!state.courseChipsRendered && state.country) { renderCourseChips(state.country); state.courseChipsRendered = true; }
+        return true;
+    }
+
+    function autoFormatPhone(el) {
+        let raw = el.value.replace(/\D/g, ''); raw = raw.slice(0, 10); el.value = raw.replace(/(\d{5})(\d{5})/, "$1 $2");
+        const isIndian = /^[6-9]\d{9}$/.test(raw);
+        if (isIndian) { el.classList.add('valid'); document.getElementById('contact-error').style.display = 'none'; state.phone = '+91' + raw; if (raw.length === 10) setTimeout(() => document.getElementById('inpEmail').focus(), 150); } 
+        else { el.classList.remove('valid'); state.phone = null; if(raw.length > 0 && !/^[6-9]/.test(raw)) document.getElementById('contact-error').style.display = 'block'; }
+    }
+
+    function checkJoinTime() {
+        if (!state.batch || !state.classTimestamp) return;
+        const now = Date.now(); const diff = state.classTimestamp - now; const tenMins = 10 * 60 * 1000;
+        if (diff > tenMins) { document.getElementById('timer-modal').style.display = 'flex'; startLiveCountdown(diff); } 
+        else { const msg = `Hi! I am ${state.name} (ID: ${document.getElementById('tkt-id').innerText}). I want to join the ${state.exam} class.`; const waUrl = `${state.batch.wa}?text=${encodeURIComponent(msg)}`; window.open(waUrl, '_blank'); }
+    }
+
+    function joinWhatsApp() { haptic(); if(state.batch && state.batch.wa) { window.open(state.batch.wa, '_blank'); } else { alert("WhatsApp link not available for this batch."); } }
+
+    function startLiveCountdown(initialDiff) {
+        const display = document.getElementById('live-countdown');
+        if(countdownInterval) clearInterval(countdownInterval);
+        const update = () => {
+            const now = Date.now(); const diff = state.classTimestamp - now;
+            if (diff <= (10 * 60 * 1000)) { clearInterval(countdownInterval); closeTimerModal(); const msg = `Hi! I am ${state.name} (ID: ${document.getElementById('tkt-id').innerText}). I want to join the ${state.exam} class.`; const waUrl = `${state.batch.wa}?text=${encodeURIComponent(msg)}`; window.open(waUrl, '_blank'); return; }
+            const h = Math.floor((diff / (1000 * 60 * 60))); const m = Math.floor((diff / (1000 * 60)) % 60); const s = Math.floor((diff / 1000) % 60);
+            display.innerText = `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+        };
+        update(); countdownInterval = setInterval(update, 1000);
+    }
+
+    function closeTimerModal() { document.getElementById('timer-modal').style.display = 'none'; if(countdownInterval) clearInterval(countdownInterval); }
+
+    function saveTicketSnapshot() {
+        const ticketEl = document.querySelector('.ticket-face'); if(!ticketEl) return;
+        const scene = document.querySelector('.ticket-scene');
+        scene.style.animation = 'none'; scene.style.transform = 'none';
+        html2canvas(ticketEl, { scale: 2, useCORS: true, backgroundColor: null, onclone: (clonedDoc) => { const clonedHint = clonedDoc.querySelector('.tap-hint'); if(clonedHint) clonedHint.style.display = 'none'; } }).then(canvas => {
+            const link = document.createElement('a'); link.download = `BoardingPass_${state.name.split(' ')[0]}.png`; link.href = canvas.toDataURL(); link.click();
+            scene.style.animation = 'floatTicket 6s ease-in-out infinite';
+        });
+    }
+
+    function finish() {
         haptic();
-        try {
-            const buildCalendarData = () => {
-                const times = state.batch.time.split('-').map(t => t.trim());
-                const [sh, sm] = times[0].split(':').map(Number); const [eh, em] = times[1].split(':').map(Number);
-                const now = new Date(); let diff = state.batch.startDay - now.getDay(); if (diff <= 0) diff += 7;
-                const start = new Date(now); start.setDate(now.getDate() + diff); start.setHours(sh, sm, 0, 0);
-                const end = new Date(start); end.setHours(eh, em, 0, 0);
-                const pad = n => n.toString().padStart(2, "0");
-                const format = d => d.getFullYear() + pad(d.getMonth() + 1) + pad(d.getDate()) + "T" + pad(d.getHours()) + pad(d.getMinutes()) + "00";
-                const byDay = state.batch.type === 'weekday' ? "MO,TU,WE,TH,FR" : "SA,SU";
-                return { startISO: format(start), endISO: format(end), rrule: `FREQ=WEEKLY;BYDAY=${byDay};COUNT=20` };
-            };
-            const openGoogleCalendar = () => {
-                const { startISO, endISO, rrule } = buildCalendarData();
-                const url = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(`${state.exam} Live Class`)}&details=${encodeURIComponent(`Trainer: ${state.batch.trainer}\nJoin: ${state.batch.form}`)}&dates=${startISO}/${endISO}&ctz=Asia/Kolkata&recur=${encodeURIComponent(rrule)}`;
-                window.open(url, "_blank");
-            };
-            const isGoogleUser = /gmail|google/i.test(navigator.userAgent) || /android/i.test(navigator.userAgent);
-            if (isGoogleUser) openGoogleCalendar(); else alert("Calendar Added!");
-            document.getElementById("calendar-toast").classList.add("show"); setTimeout(() => document.getElementById("calendar-toast").classList.remove("show"), 3500);
-        } catch (e) { alert("Could not add reminders. Please try again."); }
+        // 1. Validate PII
+        const nameInput = document.getElementById('inpName');
+        const phoneInput = document.getElementById('inpPhone');
+        const emailInput = document.getElementById('inpEmail');
+        const errorEl = document.getElementById('error-msg');
+        const errorContact = document.getElementById('contact-error');
+        
+        state.name = nameInput.value.trim();
+        const rawPhone = phoneInput.value.replace(/\D/g, '');
+        if(/^[6-9]\d{9}$/.test(rawPhone)) state.phone = '+91' + rawPhone;
+        state.email = emailInput.value.trim();
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+        const isNameValid = state.name && state.name.length >= 2;
+        const isPhoneValid = state.phone && state.phone.length >= 12;
+        const isEmailValid = emailRegex.test(state.email);
+
+        if (!isNameValid || !isPhoneValid || !isEmailValid) {
+            shake();
+            if(errorEl) { errorEl.style.display = 'block'; errorEl.innerText = "⚠️ Please check your details."; }
+            if(errorContact) { 
+                if(!isPhoneValid || !isEmailValid) errorContact.style.display = 'block'; 
+                else errorContact.style.display = 'none';
+            }
+            if(!isNameValid) nameInput.classList.add('invalid');
+            if(!isPhoneValid) phoneInput.classList.add('invalid');
+            if(!isEmailValid) emailInput.classList.add('invalid');
+            return;
+        }
+
+        // 2. Validate Degree/Course Selection
+        // If degree not selected, scroll to it
+        if (!state.degree) {
+            // Lazy select first degree if section visible but nothing clicked?
+            // Better to prompt user
+            document.getElementById('target-degree-section').style.display = 'block';
+            if(!state.courseChipsRendered) { renderCourseChips(state.country); state.courseChipsRendered = true; }
+            
+            // Scroll to degree section
+            const formArea = document.querySelector('.compact-ui .form-area');
+            const degreeSec = document.getElementById('target-degree-section');
+            if(formArea && degreeSec) {
+                formArea.scrollTo({ top: degreeSec.offsetTop - 20, behavior: 'smooth' });
+            }
+            
+            // Show toast/error
+            if(errorEl) { errorEl.style.display = 'block'; errorEl.innerText = "👇 Please select a Degree"; }
+            return;
+        }
+        
+        // If course not selected
+        if (!state.course) {
+             document.getElementById('target-course-section').style.display = 'block';
+             const formArea = document.querySelector('.compact-ui .form-area');
+             const courseSec = document.getElementById('target-course-section');
+             if(formArea && courseSec) {
+                formArea.scrollTo({ top: courseSec.offsetTop - 20, behavior: 'smooth' });
+             }
+             if(errorEl) { errorEl.style.display = 'block'; errorEl.innerText = "👇 Please select a Course"; }
+             return;
+        }
+
+        // 3. PROCEED
+        const firstName = state.name.split(' ')[0].toUpperCase();
+        const d = new Date();
+        const todayDay = d.getDay(); 
+        const startDay = state.batch ? state.batch.startDay : 1;
+        let daysAhead = (startDay - todayDay + 7) % 7;
+        
+        if(state.batch) {
+             const timeStr = state.batch.time.split('-')[0].trim();
+             const [h, m] = timeStr.split(':');
+             const classTimeToday = new Date();
+             classTimeToday.setHours(parseInt(h), parseInt(m), 0, 0);
+             if (daysAhead === 0 && classTimeToday < new Date()) daysAhead = 7; 
+        }
+        
+        d.setDate(d.getDate() + daysAhead);
+        if(state.batch) {
+             const timeStr = state.batch.time.split('-')[0].trim();
+             const [h, m] = timeStr.split(':');
+             d.setHours(parseInt(h), parseInt(m), 0, 0);
+             state.classTimestamp = d.getTime();
+        }
+
+        const startDayStr = d.toLocaleDateString('en-US', { weekday: 'long' });
+        const startDateStr = d.toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' });
+        const endDateObj = new Date(d);
+        endDateObj.setDate(d.getDate() + (4 * 7)); // 4 weeks
+        const endDateStr = endDateObj.toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' });
+        const sid = Math.floor(Math.random() * 90000) + 10000;
+
+        if(document.getElementById('tkt-name')) document.getElementById('tkt-name').innerText = firstName;
+        if(document.getElementById('tkt-exam')) document.getElementById('tkt-exam').innerText = state.exam || 'EXAM';
+        if(document.getElementById('tkt-date')) document.getElementById('tkt-date').innerText = startDateStr;
+        if(document.getElementById('tkt-day')) document.getElementById('tkt-day').innerText = startDayStr;
+        if(document.getElementById('tkt-end-date')) document.getElementById('tkt-end-date').innerText = endDateStr;
+        if(document.getElementById('tkt-time')) document.getElementById('tkt-time').innerText = state.batch ? state.batch.time : "";
+        if(document.getElementById('tkt-days-week')) document.getElementById('tkt-days-week').innerText = state.batch ? state.batch.days : "Weekly";
+        if(document.getElementById('tkt-id')) document.getElementById('tkt-id').innerText = sid;
+        if(document.getElementById('bk-id-tag')) document.getElementById('bk-id-tag').innerText = `ID: ${sid}`;
+        if(document.getElementById('tkt-id-back')) document.getElementById('tkt-id-back').innerText = sid;
+        if(document.getElementById('bk-name')) document.getElementById('bk-name').innerText = state.name;
+        if(document.getElementById('bk-phone')) document.getElementById('bk-phone').innerText = state.phone;
+        if(document.getElementById('bk-email')) document.getElementById('bk-email').innerText = state.email;
+        if(document.getElementById('bk-country')) document.getElementById('bk-country').innerText = state.country;
+        if(document.getElementById('bk-intake')) document.getElementById('bk-intake').innerText = state.intake;
+        const displayCourse = state.course ? `${state.degree} in ${state.course}` : state.degree;
+        if(document.getElementById('bk-course')) document.getElementById('bk-course').innerText = state.course || state.degree;
+        if(document.getElementById('bk-trainer')) document.getElementById('bk-trainer').innerText = state.batch ? state.batch.trainer : "Expert";
+        if(document.getElementById('bk-time')) document.getElementById('bk-time').innerText = state.batch ? (state.batch.days + " " + state.batch.time) : "TBD";
+
+        const qrFront = document.getElementById("qrcode-front"); if (qrFront) { qrFront.innerHTML = ''; new QRCode(qrFront, { text: state.batch ? state.batch.wa : "https://shiksha.com", width: 128, height: 128, correctLevel: QRCode.CorrectLevel.L }); }
+        const qrBack = document.getElementById("qrcode-back"); if (qrBack) { qrBack.innerHTML = ''; new QRCode(qrBack, { text: state.batch ? state.batch.form : "https://shiksha.com", width: 128, height: 128, correctLevel: QRCode.CorrectLevel.L }); }
+
+        persistState(); next(3);
+        setTimeout(() => {
+            const payload = { name: state.name, phone: state.phone, email: state.email, exam: state.exam, batch: state.batch ? state.batch.time : 'Not Selected', country: state.country, degree: state.degree, course: state.course, offers: JSON.stringify({ toefl_offer: state.offerApplied, addons: state.addons }) };
+            submitToGoogleSheet(payload);
+            if(typeof confetti !== 'undefined') confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
+        }, 300);
+    }
+    
+    function submitToGoogleSheet(data) {
+        if(!SCRIPT_URL) return; const formData = new FormData(); for(const key in data) formData.append(key, data[key]);
+        fetch(SCRIPT_URL, { method: 'POST', body: formData, mode: 'no-cors' }).catch(e => console.error("Error", e));
+    }
+
+    function restoreSession() {
+         let found = false;
+         if (typeof window.SAVED_STATE !== 'undefined') { state = window.SAVED_STATE; found = true; } 
+         else { const data = localStorage.getItem('boardingData'); if (data) { try { const prev = JSON.parse(data); if (prev.name && prev.exam) { state = { ...state, ...prev }; found = true; } } catch(e) {} } }
+        if (found) { renderTicketUI(); } else {
+            // Updated to show Error Message instead of replacing button
+            if(document.getElementById('error-msg')) {
+                const btn = document.querySelector('.resume-link');
+                if(btn) { btn.classList.remove('shake'); void btn.offsetWidth; btn.classList.add('shake'); }
+                
+                // Show a toast or update error message container if visible (Slide 3)
+                // For Slide 1 (where this button exists), we can show a temporary alert or custom toast
+                showToast("No saved ticket found.");
+            }
+        }
+    }
+    
+    function showToast(msg) {
+        // Simple toast implementation
+        let toast = document.createElement('div');
+        toast.style.position = 'fixed'; toast.style.bottom = '80px'; toast.style.left = '50%'; toast.style.transform = 'translateX(-50%)';
+        toast.style.background = '#EF4444'; toast.style.color = 'white'; toast.style.padding = '10px 20px'; toast.style.borderRadius = '20px';
+        toast.style.fontWeight = '700'; toast.style.fontSize = '12px'; toast.style.zIndex = '3000';
+        toast.innerText = msg;
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 2500);
+    }
+
+    function showError(msg) {
+        const err = document.getElementById('error-msg');
+        if(err) {
+            err.innerText = msg;
+            err.style.display = 'block';
+            err.classList.remove('shake');
+            void err.offsetWidth;
+            err.classList.add('shake');
+        }
+    }
+
+    function renderTicketUI() {
+        document.querySelectorAll('.slide').forEach(s => s.classList.remove('active')); document.getElementById('slide-4').classList.add('active');
+        document.querySelectorAll('.flight-step').forEach(s => s.classList.add('done'));
+        if(document.getElementById('tkt-name')) document.getElementById('tkt-name').innerText = state.name ? state.name.split(' ')[0].toUpperCase() : "STUDENT";
+        if(document.getElementById('tkt-exam')) document.getElementById('tkt-exam').innerText = state.exam;
+        applyCountryTheme(state.country);
+        setTimeout(() => { document.getElementById('discount-modal').style.display = 'flex'; }, 4000);
+    }
+
+    function closeDiscount() { document.getElementById('discount-modal').style.display = 'none'; }
+
+    function next(id) {
+        if(id===1 && !state.country) return shake(); if(id===2 && !state.batch) return shake();
+        document.getElementById('slide-'+id).classList.remove('active'); document.getElementById('slide-'+id).classList.add('prev');
+        const nextSlide = document.getElementById('slide-'+(id+1)); if(nextSlide) { nextSlide.classList.remove('next'); nextSlide.classList.add('active'); }
+        const stepEls = document.querySelectorAll('.flight-step');
+        if(stepEls[id-1]) { stepEls[id-1].classList.add('done'); stepEls[id-1].classList.remove('active'); } if(stepEls[id]) stepEls[id].classList.add('active');
+        if (id === 1) { const rec = getRecommendedBatch(); state.batchRecommended = rec; showRecommendedPopup(rec); }
+        if (id === 2) { if(state.degree) renderCourseChips(state.country); }
+        if (id === 3) { setTimeout(() => { document.getElementById('discount-modal').style.display = 'flex'; }, 4000); }
+    }
+
+    function setExam(v, el) {
+        haptic(); state.exam = v; document.querySelectorAll('.exam-opt').forEach(e => e.classList.remove('selected')); el.classList.add('selected');
+        const container = document.querySelector('.exam-toggle'); const index = Array.from(container.children).indexOf(el); 
+        if (index === 2) container.setAttribute('data-selected', 'right'); else container.removeAttribute('data-selected');
+        const btn = document.getElementById('swipeBtn'); const txtSuccess = document.getElementById('swipeTextSuccess');
+        if(btn) { btn.style.transform = `translateX(0px)`; document.getElementById('swipeFill').style.width = '0px'; document.getElementById('swipeText').style.opacity = 1; if(txtSuccess) txtSuccess.style.opacity = 0; }
+        state.batch = null; renderSlots('weekday'); 
+    }
+    
+    function setChip(el, key, value) {
+        haptic(); 
+        if (key === 'country') { state.country = value; applyCountryTheme(value); } 
+        else if (key === 'intake') { state.intake = value; } 
+        else if (key === 'degree') { state.degree = value; state.course = null; renderSpecializationChips(state.country, value); } 
+        else if (key === 'course') { state.course = value; revealOffers(); }
+        el.parentElement.querySelectorAll('.chip').forEach(c => c.classList.remove('selected')); el.classList.add('selected');
+    }
+
+    function setScore(el, v) {
+        haptic(); state.ugScore = v; document.querySelectorAll('.score-opt').forEach(c=>c.classList.remove('active')); el.classList.add('active');
+    }
+
+    function renderSlots(type) {
+        haptic(); const area = document.getElementById('slots-area'); if(!area) return; area.innerHTML = '';
+        document.getElementById('tab-wk').classList.toggle('selected', type==='weekday'); document.getElementById('tab-we').classList.toggle('selected', type==='weekend');
+        const list = BATCHES.filter(b => b.exam === state.exam && b.type === type);
+        list.forEach(b => {
+            const div = document.createElement('div'); div.className = 'slot-row';
+            div.innerHTML = `<div style="flex:1"><div style="display:flex; align-items:center;"><div style="font-weight:700;font-size:16px">${b.time}</div></div><div style="font-size:13px;color:#64748b;margin-top:2px;">${b.days} • ${b.trainer}</div></div><span class="material-icons-round slot-check">radio_button_unchecked</span>`;
+            if (state.batchRecommended && state.batchRecommended.id === b.id) { const tag = document.createElement('div'); tag.innerText = "Recommended"; tag.style = "background:#ECFDF5;color:#059669;border:1px solid #A7F3D0;font-size:10px;padding:2px 6px;border-radius:6px;font-weight:700;display:inline-block;margin-bottom:3px;"; div.prepend(tag); }
+            div.onclick = () => { haptic(); state.batch = b; document.querySelectorAll('.slot-row').forEach(r => { r.classList.remove('active'); r.querySelector('.slot-check').innerText='radio_button_unchecked'; }); div.classList.add('active'); div.querySelector('.slot-check').innerText='check_circle'; setTimeout(() => next(2), 400); };
+            area.appendChild(div);
+        });
+    }
+
+    function renderCourseChips(country) {
+        const container = document.getElementById('degree-chips'); if (!container) return; container.innerHTML = ''; state.degree = null;
+        const list = COUNTRY_DEGREE_MAP[country] || COUNTRY_DEGREE_MAP['USA'];
+        list.forEach(item => { const chip = document.createElement('div'); chip.className = 'chip'; chip.innerText = item; chip.onclick = function() { setChip(this, 'degree', item); }; container.appendChild(chip); });
+    }
+    
+    function renderSpecializationChips(country, degree) {
+        const section = document.getElementById('target-course-section'); const container = document.getElementById('course-chips'); if(!container) return;
+        container.innerHTML = ''; section.style.display = 'block';
+        let list = [];
+        if(DEGREE_SPECIALIZATION_MAP[country] && DEGREE_SPECIALIZATION_MAP[country][degree]) { list = DEGREE_SPECIALIZATION_MAP[country][degree]; } else { list = DEGREE_SPECIALIZATION_MAP['default']; }
+        list.forEach(item => { const chip = document.createElement('div'); chip.className = 'chip'; chip.innerText = item; chip.onclick = function() { setChip(this, 'course', item); }; container.appendChild(chip); });
+        setTimeout(() => { const formArea = document.querySelector('.compact-ui .form-area'); formArea.scrollTo({ top: formArea.scrollHeight, behavior: 'smooth' }); }, 100);
+    }
+    
+    function revealOffers() {
+        const section = document.getElementById('offers-section'); const cta = document.getElementById('final-cta-container');
+        section.style.display = 'flex'; cta.style.display = 'block';
+        const offerCard = document.getElementById('toefl-offer'); if(state.exam === 'TOEFL') { offerCard.style.display = 'flex'; } else { offerCard.style.display = 'none'; }
+        setTimeout(() => { const formArea = document.querySelector('.compact-ui .form-area'); formArea.scrollTo({ top: formArea.scrollHeight, behavior: 'smooth' }); }, 100);
+    }
+    
+    function toggleOffer(el) { haptic(); state.offerApplied = !state.offerApplied; el.classList.toggle('selected', state.offerApplied); const icon = el.querySelector('#offer-check'); icon.innerText = state.offerApplied ? 'check_box' : 'check_box_outline_blank'; }
+    function toggleAddon(el, type) { haptic(); if(state.addons.includes(type)) { state.addons = state.addons.filter(a => a !== type); el.classList.remove('selected'); } else { state.addons.push(type); el.classList.add('selected'); } }
+
+    function getRecommendedBatch() {
+        const now = new Date(); const today = now.getDay(); const currentMinutes = now.getHours() * 60 + now.getMinutes();
+        const list = BATCHES.filter(b => b.exam === state.exam); if (!list.length) return null;
+        const toMinutes = (t) => { const [h, m] = t.split(':').map(Number); return h * 60 + m; };
+        const enriched = list.map(b => { const startTime = b.time.split('-')[0].trim(); return { ...b, startMinutes: toMinutes(startTime) }; });
+        const groupA = enriched.filter(b => b.startDay === today && b.startMinutes > currentMinutes);
+        const groupB = enriched.filter(b => b.startDay !== today);
+        const sortByStartTime = (arr) => arr.sort((a, b) => a.startMinutes - b.startMinutes);
+        const sortByDayThenTime = (arr) => arr.sort((a, b) => { const dayDiffA = (a.startDay - today + 7) % 7; const dayDiffB = (b.startDay - today + 7) % 7; if (dayDiffA !== dayDiffB) return dayDiffA - dayDiffB; return a.startMinutes - b.startMinutes; });
+        if (groupA.length > 0) return sortByStartTime(groupA)[0]; if (groupB.length > 0) return sortByDayThenTime(groupB)[0]; return enriched[0];
+    }
+    
+    function showRecommendedPopup(batch) {
+        if(!batch) return;
+        const text = `<span style="font-size:15px; font-weight:600; color:#334155;">${batch.days} • ${batch.time}</span>`;
+        document.getElementById('rec-text').innerHTML = text;
+        const timerContainer = document.getElementById('rec-timer-container'); const timerDisplay = document.getElementById('flip-timer');
+        const now = new Date(); let targetTime = new Date(); const [h, m] = batch.time.split('-')[0].trim().split(':').map(Number); targetTime.setHours(h, m, 0, 0);
+        const currentDay = now.getDay(); const batchDay = batch.startDay;
+        if (currentDay === batchDay) { if (targetTime <= now) { targetTime.setDate(targetTime.getDate() + 7); } } else { let daysUntil = (batchDay - currentDay + 7) % 7; targetTime.setDate(targetTime.getDate() + daysUntil); }
+        timerContainer.style.display = 'block'; if (popupTimerInterval) clearInterval(popupTimerInterval);
+        const updateTimer = () => {
+            const currentTime = new Date(); const diff = targetTime - currentTime;
+            if (diff <= 0) { timerDisplay.innerHTML = '<span style="color:#22C55E; font-weight:700;">Class Started!</span>'; clearInterval(popupTimerInterval); return; }
+            const d = Math.floor(diff / (1000 * 60 * 60 * 24)); const hr = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)); const min = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60)); const sec = Math.floor((diff % (1000 * 60)) / 1000); const pad = (n) => n.toString().padStart(2, '0');
+            let html = ''; if (d > 0) { html += `<div class="flip-unit"><div class="flip-box">${pad(d)}</div><div class="flip-label">DAYS</div></div><div class="flip-sep">:</div>`; }
+            html += `<div class="flip-unit"><div class="flip-box">${pad(hr)}</div><div class="flip-label">HRS</div></div><div class="flip-sep">:</div><div class="flip-unit"><div class="flip-box">${pad(min)}</div><div class="flip-label">MIN</div></div><div class="flip-sep">:</div><div class="flip-unit"><div class="flip-box">${pad(sec)}</div><div class="flip-label">SEC</div></div>`;
+            timerDisplay.innerHTML = html;
+        };
+        updateTimer(); popupTimerInterval = setInterval(updateTimer, 1000); document.getElementById('rec-modal').style.display = 'flex';
+    }
+    
+    // UPDATED: Robust Swipe Logic
+    let swipeInitialized = false;
+    function initSwipeLogic() {
+        if(swipeInitialized) return; // Prevent duplicate listeners
+        swipeInitialized = true;
+
+        const track = document.getElementById('swipeTrack');
+        const btn = document.getElementById('swipeBtn');
+        const fill = document.getElementById('swipeFill');
+        const txt = document.getElementById('swipeText');
+        const txtSuccess = document.getElementById('swipeTextSuccess');
+        if(!btn) return;
+        
+        let isDragging = false, startX = 0;
+        const MAGNET_THRESHOLD_PCT = 0.40; 
+        
+        const getX = (e) => {
+            return e.type.includes('mouse') ? e.pageX : (e.touches && e.touches[0] ? e.touches[0].pageX : 0);
+        };
+
+        const resetSwipe = () => { isDragging = false; btn.style.transition = 'transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)'; fill.style.transition = 'width 0.3s'; btn.style.transform = `translateX(0px)`; fill.style.width = '0px'; txt.style.opacity = 1; };
+        const successSwipe = (maxDist) => {
+            isDragging = false; btn.style.transition = 'transform 0.25s cubic-bezier(0.4, 1.2, 0.4, 1)'; fill.style.transition = 'width 0.25s'; btn.style.transform = `translateX(${maxDist}px)`; fill.style.width = '100%'; txt.style.opacity = 0;
+            haptic(); setTimeout(() => { if(txtSuccess) txtSuccess.style.opacity = 1; btn.innerHTML = '<span class="material-icons-round">check</span>'; next(1); }, 250);
+        };
+        
+        const handleStart = (e) => { 
+            if(!state.country) { shake(); return; } 
+            isDragging = true; 
+            startX = getX(e);
+            btn.style.transition = 'none'; 
+            fill.style.transition = 'none'; 
+            haptic(); 
+        };
+        const handleMove = (e) => {
+            if(!isDragging) return;
+            const x = getX(e); 
+            if(x === 0 && e.type.includes('touch')) return; 
+            const diff = x - startX;
+            // IMPORTANT: Check swipe direction to allow vertical scroll if user pulls up/down
+            if(Math.abs(diff) > 5 && e.cancelable) {
+                // If mostly horizontal, block scroll. Else let it scroll.
+                // Simple version: block if dragging
+                e.preventDefault(); 
+            }
+            
+            const max = track.offsetWidth - btn.offsetWidth - 8; 
+            if (diff >= 0 && diff <= max) { btn.style.transform = `translateX(${diff}px)`; fill.style.width = `${diff + 30}px`; txt.style.opacity = 1 - (diff / max); }
+        };
+        const handleEnd = () => {
+            if (!isDragging) return;
+            const max = track.offsetWidth - btn.offsetWidth - 8;
+            const currentStyle = btn.style.transform;
+            const currentMatch = currentStyle.match(/translateX\((.*)px\)/);
+            const current = currentMatch ? parseFloat(currentMatch[1]) : 0;
+            const isMagnetic = current > (max * MAGNET_THRESHOLD_PCT); 
+            
+            // Removed click-to-complete, strictly drag
+            if (isMagnetic) successSwipe(max); else resetSwipe();
+        };
+        
+        btn.addEventListener('mousedown', handleStart); 
+        btn.addEventListener('touchstart', handleStart, {passive: false});
+        window.addEventListener('mousemove', handleMove); 
+        window.addEventListener('touchmove', handleMove, {passive: false});
+        window.addEventListener('mouseup', handleEnd); 
+        window.addEventListener('touchend', handleEnd);
     }
 </script>
 </body>
-
 </html>
